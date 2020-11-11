@@ -1,7 +1,22 @@
 #include <atomic>
+#include <algorithm>
 #include <csignal>
+#include <cstdio>
 #include <filesystem>
 #include <iostream>
+#include <set>
+
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#define _text(x) L ## x
+#define text(x) _text(x)
+#define put_string(x) _putws(text(x))
+#define put_formatted(x, ...) wprintf_s(text(x), __VA_ARGS__)
+#else
+#define put_string(x) puts(x)
+#define put_formatted(x, ...) printf(x, __VA_ARGS__)
+#endif
 
 namespace
 {
@@ -12,6 +27,35 @@ namespace
 	void signal_handler(int signal)
 	{
 		g_signal_status = signal;
+	}
+
+	const std::set<std::filesystem::path> paths_to_ignore =
+	{
+		".bzr",
+		".cvs",
+		".git",
+		".hg",
+		".svn"
+	};
+
+	bool is_ignored(const fs::directory_entry& entry)
+	{
+		const auto equal_stem = [&](const fs::path& ignore)
+		{
+			return entry.path().stem() == ignore;
+		};
+
+		return std::any_of(paths_to_ignore.cbegin(), paths_to_ignore.cend(), equal_stem);
+	}
+
+	bool is_skipped(const fs::directory_entry& entry, const std::vector<fs::path>& unwanted)
+	{
+		const auto equal_filename = [&](const fs::path& to_remove)
+		{
+			return entry.path().filename() == to_remove;
+		};
+
+		return std::none_of(unwanted.cbegin(), unwanted.cend(), equal_filename);
 	}
 
 	uintmax_t remove_entry(const fs::directory_entry& entry)
@@ -30,20 +74,20 @@ namespace
 				}
 				default:
 				{
-					std::cerr << " -> skipped, invalid type: "
-						<< static_cast<int>(entry.status().type()) << '.' << std::endl;
+					put_formatted(" -> skipped, invalid type: %d.\n", 
+						static_cast<int>(entry.status().type()));
 				}
 			}
 		}
 		catch (const fs::filesystem_error& e)
 		{
-			std::cerr << " -> skipped, exception: " << e.what() << std::endl;
+			printf(" -> skipped, exception: %s\n", e.what());
 		}
 
 		return 0;
 	}
 
-	void clean(const fs::path& path, const std::string& to_remove)
+	void clean(const fs::path& path, const std::vector<fs::path>& to_remove)
 	{
 		auto iter = fs::recursive_directory_iterator(path);
 		uintmax_t removed_total = 0;
@@ -52,54 +96,72 @@ namespace
 		{
 			if (g_signal_status)
 			{
-				std::cerr << "Signaled: " << g_signal_status << std::endl;
+				put_formatted(" -> skipped, invalid type: %d.\n", g_signal_status.load());
 				break;
 			}
 
-			std::cout << entry;
-
-			if (entry.path().filename() != to_remove)
+			// Optimization tweak
+			const auto native_path = entry.path().native();
+			fwrite(native_path.c_str(), sizeof(native_path.front()), native_path.size(), stdout);
+			
+			if (is_ignored(entry))
 			{
-				std::cout << " -> skipped." << std::endl;
+				iter.disable_recursion_pending();
+				++iter;
+				put_string(" -> ignored.");
+				continue;
+			}
+
+			if (is_skipped(entry, to_remove))
+			{
+				put_string(" -> skipped.");
 				continue;
 			}
 
 			if ((entry.status().permissions() & fs::perms::owner_exec) == fs::perms::none)
 			{
-				std::cout << " -> skipped, no perms." << std::endl;
+				put_string(" -> skipped, no perms.");
 				continue;
 			}
 
-			uintmax_t removed = remove_entry(entry);
+			const uintmax_t removed = remove_entry(entry);
 
 			if (!removed)
 			{
-				std::cout << " -> remove failed." << std::endl;
+				put_string(" -> remove failed.");
 				continue;
 			}
 
 			removed_total += removed;
 			iter.disable_recursion_pending();
-			std::cout << " -> removed." << std::endl;
+			put_string(" -> removed.");
 		}
 
-		std::cout << "Done. Removed: " << removed_total << " items." << std::endl;
+		put_formatted("Done. Removed: %zu items.\n", removed_total);
 	}
 }
 
+#ifdef _WIN32
+int wmain(int argc, wchar_t* argv[])
+{
+	_setmode(_fileno(stdout), _O_U16TEXT);
+	_setmode(_fileno(stderr), _O_U16TEXT);
+#else
 int main(int argc, char* argv[])
 {
+#endif
 	if (std::signal(SIGINT, signal_handler) == SIG_ERR)
 	{
-		std::cerr << "Cannot attach SIGINT handler!" << std::endl;
+		put_string("Cannot attach SIGINT handler!");
 		return EXIT_FAILURE;
 	}
 
 	if (argc < 3)
 	{
-		std::cerr << "Usage:" << std::endl;
-		std::cerr << argv[0] << " <starting-location>" << 
-			" <file-or-folder-name-to-recursively-delete>" << std::endl;
+		put_formatted(
+			"Usage\n%s <starting-location> <file-or-folder-names-to-recursively-delete>\n",
+			argv[0]);
+
 		return EXIT_FAILURE;
 	}
 
@@ -109,15 +171,15 @@ int main(int argc, char* argv[])
 
 		if (!fs::exists(start_dir))
 		{
-			std::cerr << start_dir << " does not exist!";
+			put_formatted("'%s' does not exist!\n", start_dir.c_str());
 			return EXIT_FAILURE;
 		}
 
-		clean(start_dir, argv[2]);
+		clean(start_dir, { argv + 1, argv + argc });
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "An exception occurred: " << e.what() << std::endl;
+		printf("An exception occurred: %s\n", e.what());
 		return EXIT_FAILURE;
 	}
 
