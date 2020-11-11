@@ -14,3 +14,4 @@ endif()
 
 add_subdirectory("dir_clean")
 add_subdirectory("rand_file")
+add_subdirectory("drive_info")

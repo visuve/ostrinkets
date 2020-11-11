@@ -6,6 +6,9 @@
 ### dir_clean
 - Finds and removes files or folders recursively based on user input
 
+### drive_info
+- Shows basic information of physical drives
+
 ## Prerequisites
 
 - GCC >= 8.3 
