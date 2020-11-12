@@ -8,8 +8,6 @@
 #include <Windows.h>
 #include <wrl/client.h>
 
-#pragma comment(lib, "wbemuuid.lib")
-
 namespace fstrinkets
 {
 	template<typename T>

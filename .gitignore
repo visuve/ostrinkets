@@ -3,4 +3,4 @@ out/
 .idea/
 cmake-build-*/
 CMakeSettings.json
-
+*.user
