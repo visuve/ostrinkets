@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <iostream>
 #include <set>
+#include <vector>
 
 #ifdef _WIN32
 #include <fcntl.h>
@@ -74,7 +75,7 @@ namespace
 				}
 				default:
 				{
-					put_formatted(" -> skipped, invalid type: %d.\n", 
+					put_formatted(" -> skipped, invalid type: %d.\n",
 						static_cast<int>(entry.status().type()));
 				}
 			}
@@ -103,7 +104,7 @@ namespace
 			// Optimization tweak
 			const auto native_path = entry.path().native();
 			fwrite(native_path.c_str(), sizeof(native_path.front()), native_path.size(), stdout);
-			
+
 			if (is_ignored(entry))
 			{
 				iter.disable_recursion_pending();

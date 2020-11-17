@@ -1,6 +1,4 @@
-cmake_minimum_required (VERSION 3.8)
-
-if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_executable(DriveInfo "main.cpp" "drive_info_win.cpp")
 	target_link_libraries(DriveInfo wbemuuid)
 endif()

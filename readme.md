@@ -9,6 +9,9 @@
 ### drive_info
 - Shows basic information of physical drives
 
+### sloth_copy
+- Copies a file very _slowly_
+
 ## Prerequisites
 
 - GCC >= 8.3 
