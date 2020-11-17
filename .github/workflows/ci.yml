@@ -1,0 +1,23 @@
+name: fstrinkets
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install tools
+      run: |
+        sudo apt install gcc cmake libudev-dev
+
+    - name: Build
+      run: |
+        mkdir out
+        cd out
+        cmake ..
+        make
