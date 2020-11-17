@@ -4,8 +4,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <thread>
-#include <unistd.h>
 
 namespace
 {
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 	{
 		if (!std::filesystem::exists(argv[1]))
 		{
-			std::cout << "Input: '" << argv[1] << "' does not exist!" << std::endl;
+			std::cerr << "Input: '" << argv[1] << "' does not exist!" << std::endl;
 			return ENOENT;
 		}
 

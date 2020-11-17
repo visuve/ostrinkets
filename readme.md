@@ -12,6 +12,9 @@
 ### sloth_copy
 - Copies a file very _slowly_
 
+### entropy_calc
+- Calculates Shannon's entropy of a file
+
 ## Prerequisites
 
 - GCC >= 8.3 
