@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 	if (std::signal(SIGINT, signal_handler) == SIG_ERR)
 	{
 		std::cerr << "Cannot attach SIGINT handler!" << std::endl;
-		return -1;
+		return EXIT_FAILURE;
 	}
 
 	try
@@ -113,5 +113,5 @@ int main(int argc, char** argv)
 		std::cerr << "An exception occurred: " << e.what() << std::endl;
 	}
 
-	return -1;
+	return EXIT_FAILURE;
 }

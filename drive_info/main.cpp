@@ -9,7 +9,7 @@ int main()
 
 	if (drives.empty())
 	{
-		return -1;
+		return EXIT_FAILURE;
 	}
 
 	std::cout << std::endl << "Here are your drives:" << std::endl << std::endl;
