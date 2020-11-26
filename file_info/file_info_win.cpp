@@ -107,7 +107,6 @@ namespace fstrinkets
 				std::wcout << std::endl;
 			}
 		}
-
 		{
 			FILE_STANDARD_INFO info = {};
 
@@ -126,23 +125,21 @@ namespace fstrinkets
 				std::wcout << std::endl;
 			}
 		}
-
 		{
-			FILE_ID_INFO info = {};
+			FILE_ALIGNMENT_INFO info = {};
 
 			if (GetFileInformationByHandleEx(
 				handle,
-				FILE_INFO_BY_HANDLE_CLASS::FileIdInfo,
+				FILE_INFO_BY_HANDLE_CLASS::FileAlignmentInfo,
 				&info,
-				sizeof(FILE_ID_INFO)))
+				sizeof(FILE_ALIGNMENT_INFO)))
 			{
-				std::wcout << L"\tFileIdInfo:" << std::endl;
-				std::wcout << L"\t\tVolumeSerialNumber: " << info.VolumeSerialNumber << std::endl;
-				std::wcout << L"\t\tFileId: " << info.FileId << std::endl;
+				std::wcout << L"\tFileAlignmentInfo:" << std::endl;
+				std::wcout << L"\t\tAlignmentRequirement: "
+					<< info.AlignmentRequirement << std::endl;
 				std::wcout << std::endl;
 			}
 		}
-
 		{
 			FILE_STORAGE_INFO info = {};
 
@@ -176,6 +173,21 @@ namespace fstrinkets
 				std::wcout << L"\t\tByteOffsetForPartitionAlignment: " <<
 					info.ByteOffsetForPartitionAlignment << std::endl;
 
+				std::wcout << std::endl;
+			}
+		}
+		{
+			FILE_ID_INFO info = {};
+
+			if (GetFileInformationByHandleEx(
+				handle,
+				FILE_INFO_BY_HANDLE_CLASS::FileIdInfo,
+				&info,
+				sizeof(FILE_ID_INFO)))
+			{
+				std::wcout << L"\tFileIdInfo:" << std::endl;
+				std::wcout << L"\t\tVolumeSerialNumber: " << info.VolumeSerialNumber << std::endl;
+				std::wcout << L"\t\tFileId: " << info.FileId << std::endl;
 				std::wcout << std::endl;
 			}
 		}
