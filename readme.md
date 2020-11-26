@@ -15,10 +15,11 @@
 ### entropy_calc
 - Calculates Shannon's entropy of a file
 
+### file_info
+- Example usage of 
+	- fstat & fstatvfs on POSIX and GetFileInformationByHandle & GetFileInformationByHandleEx on Windows
+
 ## Prerequisites
 
-- GCC >= 8.3 
-- GCC >= CMake >= 3.8
-  - or
-- Visual Studio 2019 with latest updates
-  - https://www.visualstudio.com/
+- Windows, Linux or FreeBSD
+- GCC, Clang or Visual Studio 2019

@@ -1,6 +1,6 @@
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required(VERSION 3.8)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 project("fstrinkets")
 
@@ -17,3 +17,4 @@ add_subdirectory("rand_file")
 add_subdirectory("drive_info")
 add_subdirectory("sloth_copy")
 add_subdirectory("entropy_calc")
+add_subdirectory("file_info")
