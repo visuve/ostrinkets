@@ -1,14 +1,12 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_CXX_STANDARD 20)
 
 project("fstrinkets")
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	add_compile_options(/W4 /WX)
-endif()
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(MSVC)
+	add_compile_options(/W4 /WX /MP)
+else()
 	add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 

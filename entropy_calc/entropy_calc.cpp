@@ -1,5 +1,7 @@
 #include <chrono>
 #include <cmath>
+#include <cstdint>
+#include <cuchar>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -8,10 +10,10 @@
 
 namespace
 {
-	double entropy(std::basic_ifstream<uint8_t>& input_stream)
+	double entropy(std::basic_istream<char8_t>& input_stream)
 	{
-		std::vector<uint8_t> buffer(0x10000);
-		std::map<uint8_t, uint64_t> frequencies;
+		std::vector<char8_t> buffer(0x10000);
+		std::map<char8_t, uint64_t> frequencies;
 		std::streamsize total_bytes_read = 0;
 
 		while (input_stream.read(buffer.data(), buffer.size()))
@@ -20,7 +22,7 @@ namespace
 
 			for (std::streamsize i = 0; i < bytes_read; ++i)
 			{
-				uint8_t character = buffer[i];
+				char8_t character = buffer[i];
 				++frequencies[character];
 			}
 
@@ -57,7 +59,7 @@ int main(int argc, char** argv)
 			return ENOENT;
 		}
 
-		std::basic_ifstream<uint8_t> input_stream(input_path, std::ios::binary);
+		std::basic_ifstream<char8_t> input_stream(input_path, std::ios::binary);
 
 		if (!input_stream)
 		{
