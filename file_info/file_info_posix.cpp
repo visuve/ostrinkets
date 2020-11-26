@@ -45,7 +45,7 @@ namespace fstrinkets
 
 		if (descriptor == -1)
 		{
-			std::cerr << "Failed to open '" << path << L"'." << std::endl;
+			std::cerr << "Failed to open '" << path << "'." << std::endl;
 			return;
 		}
 
