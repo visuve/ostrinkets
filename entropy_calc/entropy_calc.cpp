@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace
@@ -12,7 +12,7 @@ namespace
 	double entropy(std::basic_istream<std::byte>& input_stream)
 	{
 		std::vector<std::byte> buffer(0x10000);
-		std::map<std::byte, uint64_t> frequencies;
+		std::unordered_map<std::byte, uint64_t> frequencies;
 		std::streamsize total_bytes_read = 0;
 
 		while (input_stream)
