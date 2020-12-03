@@ -1,10 +1,9 @@
-#include <chrono>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 
 namespace
@@ -12,7 +11,7 @@ namespace
 	double entropy(std::basic_istream<std::byte>& input_stream)
 	{
 		std::vector<std::byte> buffer(0x10000);
-		std::unordered_map<std::byte, uint64_t> frequencies;
+		std::array<uint64_t, 0xFF> frequencies = {};
 		std::streamsize total_bytes_read = 0;
 
 		while (input_stream)
@@ -24,7 +23,7 @@ namespace
 			for (std::streamsize i = 0; i < bytes_read; ++i)
 			{
 				std::byte character = buffer[i];
-				++frequencies[character];
+				++frequencies[static_cast<size_t>(character)];
 			}
 
 			total_bytes_read += bytes_read;
@@ -32,7 +31,7 @@ namespace
 
 		double entropy = 0;
 
-		for (const auto& [key, value] : frequencies)
+		for (uint64_t value : frequencies)
 		{
 			double frequency = value / double(total_bytes_read);
 			entropy -= frequency * std::log2(frequency);
