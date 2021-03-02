@@ -1,6 +1,7 @@
 #include "file_info.hpp"
 
 #include <fcntl.h>
+#include <mntent.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
@@ -42,6 +43,7 @@ namespace fstrinkets
 	{
 		constexpr uint32_t open_flags = O_RDONLY;
 		auto_descriptor descriptor(open(path.c_str(), open_flags));
+		dev_t device_number = 0;
 
 		if (descriptor == -1)
 		{
@@ -75,6 +77,8 @@ namespace fstrinkets
 				std::cout << "\t\tst_mtim: " << info.st_mtim << std::endl;
 				std::cout << "\t\tst_ctim: " << info.st_ctim << std::endl;
 				std::cout << std::endl;
+
+				device_number = info.st_dev;
 			}
 		}
 		{
@@ -100,6 +104,38 @@ namespace fstrinkets
 				std::cout << "\t\tf_namemax: " << info.f_namemax << std::endl;
 				std::cout << std::endl;
 			}
+		}
+		{
+			FILE* file = setmntent("/proc/mounts", "r");
+
+			if (!file)
+			{
+				return;
+			}
+
+			dev_t guess = 1;
+			struct mntent* mount_table_entry = nullptr;
+
+			do
+			{
+				++guess;
+				mount_table_entry = getmntent(file);
+
+				if (guess == device_number && mount_table_entry)
+				{
+					std::cout << "\tgetmntent:" << std::endl;
+					std::cout << "\t\tmnt_fsname: " << mount_table_entry->mnt_fsname << std::endl;
+					std::cout << "\t\tmnt_dir:" << mount_table_entry->mnt_dir << std::endl;
+					std::cout << "\t\tmnt_type: " << mount_table_entry->mnt_type << std::endl;
+					std::cout << "\t\tmnt_opts: " << mount_table_entry->mnt_opts << std::endl;
+					std::cout << "\t\tmnt_freq: " << mount_table_entry->mnt_freq << std::endl;
+					std::cout << "\t\tmnt_passno: " << mount_table_entry->mnt_passno << std::endl;
+					std::cout << std::endl;
+				}
+			}
+			while (guess < device_number && mount_table_entry);
+
+			endmntent(file);
 		}
 	}
 }

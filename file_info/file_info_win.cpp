@@ -191,5 +191,22 @@ namespace fstrinkets
 				std::wcout << std::endl;
 			}
 		}
+		{
+			std::wstring buffer(MAX_PATH + 1, '\0');
+
+			if (GetVolumeInformationByHandleW(handle,
+				nullptr,
+				0,
+				nullptr,
+				nullptr,
+				nullptr,
+				buffer.data(),
+				MAX_PATH))
+			{
+				std::wcout << L"\tVolumeInformationByHandle:" << std::endl;
+				std::wcout << L"\t\tFileSystemName: " << buffer << std::endl;
+				std::wcout << std::endl;
+			}
+		}
 	}
 }
