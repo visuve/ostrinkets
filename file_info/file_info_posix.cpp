@@ -1,10 +1,13 @@
 #include "file_info.hpp"
 
 #include <fcntl.h>
-#include <mntent.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
+
+#if defined(__linux__)
+#include <mntent.h>
+#endif
 
 #include <iostream>
 
@@ -43,6 +46,8 @@ namespace fstrinkets
 	{
 		constexpr uint32_t open_flags = O_RDONLY;
 		auto_descriptor descriptor(open(path.c_str(), open_flags));
+
+		[[maybe_unused]]
 		dev_t device_number = 0;
 
 		if (descriptor == -1)
@@ -105,6 +110,7 @@ namespace fstrinkets
 				std::cout << std::endl;
 			}
 		}
+#if defined(__linux__)
 		{
 			FILE* file = setmntent("/proc/mounts", "r");
 
@@ -137,5 +143,6 @@ namespace fstrinkets
 
 			endmntent(file);
 		}
+#endif
 	}
 }
