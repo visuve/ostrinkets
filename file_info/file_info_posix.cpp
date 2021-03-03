@@ -7,6 +7,8 @@
 
 #if defined(__linux__)
 #include <mntent.h>
+#else
+#include <sys/mount.h>
 #endif
 
 #include <iostream>
@@ -142,6 +144,47 @@ namespace fstrinkets
 			while (guess < device_number && mount_table_entry);
 
 			endmntent(file);
+		}
+#else
+		{
+			struct statfs* mntbuf = {};
+			int mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
+			
+			std::string_view absolute = std::filesystem::absolute(path).string();
+
+			for (int i = 0; i < mntsize; ++i)
+			{
+				if (!absolute.starts_with(mntbuf[i].f_mntonname))
+				{
+					continue;
+				}
+
+				std::cout << "\tgetmntinfo:" << std::endl;
+				std::cout << "\t\tf_version: " << mntbuf[i].f_version << std::endl;
+				std::cout << "\t\tf_type: " << mntbuf[i].f_type << std::endl;
+				std::cout << "\t\tf_flags: " << mntbuf[i].f_flags<< std::endl;
+				std::cout << "\t\tf_bsize: " << mntbuf[i].f_bsize << std::endl;
+				std::cout << "\t\tf_iosize: " << mntbuf[i].f_iosize << std::endl;
+				std::cout << "\t\tf_blocks: " << mntbuf[i].f_blocks << std::endl;
+				std::cout << "\t\tf_bfree: " << mntbuf[i].f_bfree << std::endl;
+				std::cout << "\t\tf_bavail: " << mntbuf[i].f_bavail << std::endl;
+				std::cout << "\t\tf_files: " << mntbuf[i].f_files << std::endl;
+				std::cout << "\t\tf_ffree: " << mntbuf[i].f_ffree << std::endl;
+				std::cout << "\t\tf_syncwrites: " << mntbuf[i].f_syncwrites << std::endl;
+				std::cout << "\t\tf_asyncwrites: " << mntbuf[i].f_asyncwrites << std::endl;
+				std::cout << "\t\tf_syncreads: " << mntbuf[i].f_syncreads << std::endl;
+				std::cout << "\t\tf_asyncreads: " << mntbuf[i].f_asyncreads << std::endl;
+				std::cout << "\t\tf_spare: " << mntbuf[i].f_spare << std::endl;
+				std::cout << "\t\tf_namemax: " << mntbuf[i].f_namemax << std::endl;
+				std::cout << "\t\tf_owner: " << mntbuf[i].f_owner << std::endl;
+				// std::cout << "\t\tf_fsid: " << mntbuf[i].f_fsid << std::endl;
+				std::cout << "\t\tf_charspare: " <<  mntbuf[i].f_charspare << std::endl;
+				std::cout << "\t\tf_fstypename: " << mntbuf[i].f_fstypename << std::endl;
+				std::cout << "\t\tf_mntfromname: " << mntbuf[i].f_mntfromname << std::endl;
+				std::cout << "\t\tf_mntonname: " <<  mntbuf[i].f_mntonname << std::endl;
+
+				break;
+			}
 		}
 #endif
 	}
