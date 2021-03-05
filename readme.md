@@ -10,7 +10,7 @@
 - Shows basic information of physical drives
 
 ### sloth_copy
-- Copies a file very _slowly_
+- Copies a file very unpredictably _slowly_
 
 ### entropy_calc
 - Calculates Shannon's entropy of a file
