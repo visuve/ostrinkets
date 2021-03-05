@@ -19,6 +19,9 @@
 - Example usage of 
 	- fstat & fstatvfs on POSIX and GetFileInformationByHandle & GetFileInformationByHandleEx on Windows
 
+### bit_flipper
+- Periodically flips random bits on a file or a drive
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD
