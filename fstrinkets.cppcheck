@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+	<builddir>out/cppcheck</builddir>
+	<analyze-all-vs-configs>false</analyze-all-vs-configs>
+	<check-headers>true</check-headers>
+	<check-unused-templates>true</check-unused-templates>
+	<max-ctu-depth>10</max-ctu-depth>
+	<paths>
+		<dir name="dir_clean"/>
+		<dir name="drive_info"/>
+		<dir name="entropy_calc"/>
+		<dir name="file_info"/>
+		<dir name="rand_file"/>
+		<dir name="sloth_copy"/>
+	</paths>
+	<libraries>
+		<library>posix</library>
+		<library>windows</library>
+	</libraries>
+	<suppressions>
+		<suppression>noExplicitConstructor</suppression>
+	</suppressions>
+</project>

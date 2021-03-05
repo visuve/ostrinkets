@@ -1,0 +1,22 @@
+name: cppcheck
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Cppcheck
+      run: |
+        sudo apt update
+        sudo apt --yes install cppcheck
+
+    - name: Static analysis
+      run: |
+        cppcheck --project=fstrinkets.cppcheck
