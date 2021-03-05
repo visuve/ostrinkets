@@ -6,6 +6,11 @@ project("fstrinkets")
 
 if(MSVC)
 	add_compile_options(/W4 /WX /MP)
+	#add_compile_options(
+	#	$<$<CONFIG:>:/MT>
+	#	$<$<CONFIG:Debug>:/MTd>
+	#	$<$<CONFIG:Release>:/MT>
+	#)
 else()
 	add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()

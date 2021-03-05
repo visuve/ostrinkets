@@ -1,5 +1,6 @@
 #include <atomic>
 #include <bitset>
+#include <cassert>
 #include <csignal>
 #include <cstddef>
 #include <filesystem>
@@ -88,7 +89,7 @@ namespace
 	class resource
 	{
 	public:
-		resource(const std::filesystem::path& path) :
+		resource(const std::filesystem::path& path, bool is_disk) :
 			m_handle(open_disk_or_file(path.c_str()))
 		{
 			if (!is_valid())
@@ -96,14 +97,58 @@ namespace
 				return;
 			}
 
-			LARGE_INTEGER file_size = { };
-
-			if (!GetFileSizeEx(m_handle, &file_size))
+			if (is_disk)
 			{
-				return;
+				DWORD bytes_returned = 0;
+				DISK_GEOMETRY disk_geo = {};
+				constexpr uint32_t disk_geo_size = sizeof(DISK_GEOMETRY);
+
+				if (!DeviceIoControl(
+					m_handle,
+					IOCTL_DISK_GET_DRIVE_GEOMETRY,
+					nullptr,
+					0,
+					&disk_geo,
+					disk_geo_size,
+					&bytes_returned,
+					nullptr))
+				{
+					return;
+				}
+
+				/*if (!DeviceIoControl(
+					m_handle,
+					IOCTL_DISK_DELETE_DRIVE_LAYOUT,
+					nullptr,
+					0,
+					nullptr,
+					0,
+					nullptr,
+					nullptr))
+				{
+					return;
+				}*/
+
+				assert(bytes_returned == disk_geo_size);
+
+				m_size = disk_geo.Cylinders.QuadPart *
+					disk_geo.TracksPerCylinder *
+					disk_geo.SectorsPerTrack *
+					disk_geo.BytesPerSector;
+			}
+			else
+			{
+				LARGE_INTEGER file_size = {};
+
+				if (!GetFileSizeEx(m_handle, &file_size))
+				{
+					return;
+				}
+
+				m_size = file_size.QuadPart;
 			}
 
-			m_size = file_size.QuadPart;
+			std::cout << path << " size is " << m_size << " bytes." << std::endl;
 		}
 
 		~resource()
@@ -128,10 +173,11 @@ namespace
 		std::optional<std::byte> read_byte_at(uint64_t offset)
 		{
 			std::byte byte[2] = {};
+			DWORD bytes_to_read = 1;
 			DWORD bytes_read = 0;
 			OVERLAPPED overlapped = uint64_to_overlapped(offset);
 
-			if (!ReadFile(m_handle, &byte, 1, &bytes_read, &overlapped))
+			if (!ReadFile(m_handle, &byte, bytes_to_read, &bytes_read, &overlapped))
 			{
 				return std::nullopt;
 			}
@@ -171,23 +217,28 @@ namespace
 #else
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #define last_error errno
 
 #if defined(__linux__)
+#include <linux/fs.h>
 	using FileInfo = struct stat64;
 	constexpr auto FileInfoFunction = fstat64;
+	constexpr unsigned long int disk_size_request = BLKGETSIZE64;
 #else
 	using FileInfo = struct stat;
 	constexpr auto FileInfoFunction = fstat;
+	constexpr unsigned long int disk_size_request = DIOCGMEDIASIZE;
 #endif
+
 
 	class resource
 	{
 	public:
-		resource(const std::filesystem::path& path) :
+		resource(const std::filesystem::path& path, bool is_disk) :
 			m_descriptor(open(path.c_str(), O_RDWR))
 		{
 
@@ -196,15 +247,27 @@ namespace
 				return;
 			}
 
-			FileInfo fileInfo = {};
-
-			if (FileInfoFunction(m_descriptor, &fileInfo) != 0)
+			if (is_disk)
 			{
-				return;
+				if (ioctl(m_descriptor, disk_size_request, &m_size) != 0)
+				{
+					m_size = 0;
+					return;
+				}
+			}
+			else
+			{
+				FileInfo fileInfo = {};
+
+				if (FileInfoFunction(m_descriptor, &fileInfo) != 0)
+				{
+					return;
+				}
+
+				m_size = fileInfo.st_size;
 			}
 
-			// TODO: would std::filesystem work?
-			m_size = fileInfo.st_size;
+			std::cout << path << " size is " << m_size << " bytes." << std::endl;
 		}
 
 		~resource()
@@ -314,6 +377,7 @@ int main(int argc, char** argv)
 {
 	if (argc < 2)
 	{
+		std::cout << "Usage: " << argv[0] << " <target>" << std::endl;
 		return EINVAL;
 	}
 
@@ -323,10 +387,17 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	resource target_resource(argv[1]);
+	resource target_resource(argv[1], false); // TODO: remove hardcoded value
 
-	if (!target_resource.is_valid() || target_resource.is_empty())
+	if (!target_resource.is_valid())
 	{
+		std::cout << "Failed to open: " << argv[1] << std::endl;
+		return last_error;
+	}
+
+	if (target_resource.is_empty())
+	{
+		std::cout << argv[1] << " appears empty!" << std::endl;
 		return last_error;
 	}
 
