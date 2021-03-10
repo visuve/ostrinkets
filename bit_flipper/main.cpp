@@ -82,20 +82,11 @@ bool resource::flip_random_bit()
 		return false;
 	}
 
-	// TODO: supress warning & use lld & llu
-#ifdef _WIN32
-	printf("%lld Flipped 0x%.2X -> 0x%.2X @ %llu\n",
-		since_epoch<std::chrono::seconds>().count(),
+	std::cout << since_epoch<std::chrono::seconds>().count();
+	printf(" Flipped 0x%.2X -> 0x%.2X @ ",
 		random_source_byte_value,
-		shuffled_value,
-		offset);
-#else
-	printf("%ld Flipped 0x%.2X -> 0x%.2X @ %lu\n",
-		since_epoch<std::chrono::seconds>().count(),
-		random_source_byte_value,
-		shuffled_value,
-		offset);
-#endif 
+		shuffled_value);
+	std::cout << offset << std::endl;
 
 	return true;
 }
@@ -135,10 +126,10 @@ int main(int argc, char** argv)
 			return last_error;
 		}
 
-		const auto sleep_time = random_numeric_value<std::chrono::milliseconds>(1, 100);
+		const auto sleep_time = random_numeric_value<std::chrono::seconds>(1, 1000);
 
 		std::cout << since_epoch<std::chrono::seconds>().count()
-			<< " Sleeping for " << sleep_time.count() << "ms..." << std::endl;
+			<< " Sleeping for " << sleep_time.count() << "s..." << std::endl;
 
 		std::this_thread::sleep_for(sleep_time);
 	}
