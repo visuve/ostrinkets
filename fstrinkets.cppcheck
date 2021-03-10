@@ -6,10 +6,12 @@
 	<check-unused-templates>true</check-unused-templates>
 	<max-ctu-depth>10</max-ctu-depth>
 	<paths>
+		<dir name="bit_flipper"/>
 		<dir name="dir_clean"/>
 		<dir name="drive_info"/>
 		<dir name="entropy_calc"/>
 		<dir name="file_info"/>
+		<dir name="file_watcher"/>
 		<dir name="rand_file"/>
 		<dir name="sloth_copy"/>
 	</paths>

@@ -22,6 +22,9 @@
 ### bit_flipper
 - Periodically flips random bits on a file or a drive
 
+### file_watcher
+- Polls for file changes in a folder
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD
