@@ -18,25 +18,25 @@ namespace fstrinkets
 	struct auto_descriptor
 	{
 		auto_descriptor(int descriptor) :
-			m_descriptor(descriptor)
+			_descriptor(descriptor)
 		{
 		}
 
 		~auto_descriptor()
 		{
-			if (m_descriptor != -1)
+			if (_descriptor != -1)
 			{
-				close(m_descriptor);
+				close(_descriptor);
 			}
 		}
 
 		operator int()
 		{
-			return m_descriptor;
+			return _descriptor;
 		}
 
 	private:
-		int m_descriptor;
+		int _descriptor;
 	};
 
 	std::ostream& operator << (std::ostream& out, const timespec& time)

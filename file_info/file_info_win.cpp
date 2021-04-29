@@ -9,25 +9,25 @@ namespace fstrinkets
 	struct auto_handle
 	{
 		auto_handle(HANDLE handle) :
-			m_handle(handle)
+			_handle(handle)
 		{
 		}
 
 		~auto_handle()
 		{
-			if (m_handle)
+			if (_handle)
 			{
-				CloseHandle(m_handle);
+				CloseHandle(_handle);
 			}
 		}
 
 		operator HANDLE()
 		{
-			return m_handle;
+			return _handle;
 		}
 
 	private:
-		HANDLE m_handle;
+		HANDLE _handle;
 	};
 
 	std::wostream& operator << (std::wostream& out, const LARGE_INTEGER& large_integer)

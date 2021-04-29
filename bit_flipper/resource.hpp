@@ -20,9 +20,9 @@ public:
 
 private:
 #ifdef _WIN32
-	void* m_handle = nullptr;
+	void* _handle = nullptr;
 #else
-	int m_descriptor = -1;
+	int _descriptor = -1;
 #endif
-	uint64_t m_size = 0;
+	uint64_t _size = 0;
 };

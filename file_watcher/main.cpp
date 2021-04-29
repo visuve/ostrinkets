@@ -8,11 +8,11 @@
 #include <thread>
 #include <unordered_map>
 
-std::atomic<int> g_signal;
+std::atomic<int> _signal;
 
 void signal_handler(int signal)
 {
-	g_signal = signal;
+	_signal =signal;
 }
 
 enum class change_type : uint8_t
@@ -26,22 +26,22 @@ class file_watcher
 {
 public:
 	file_watcher(const std::filesystem::path& path, std::chrono::seconds delay) :
-		m_path(path),
-		m_delay(delay)
+		_path(path),
+		_delay(delay)
 	{
 		for (const auto& file : std::filesystem::recursive_directory_iterator(path))
 		{
-			m_paths[file.path().string()] = std::filesystem::last_write_time(file);
+			_paths[file.path().string()] = std::filesystem::last_write_time(file);
 		}
 	}
 
 	void start(const std::function<void(std::filesystem::path, change_type)>& callback)
 	{
-		while (!g_signal)
+		while (!_signal)
 		{
-			std::this_thread::sleep_for(m_delay);
+			std::this_thread::sleep_for(_delay);
 
-			for (auto it = m_paths.begin(); it != m_paths.cend();)
+			for (auto it = _paths.begin(); it != _paths.cend();)
 			{
 				if (std::filesystem::exists(it->first))
 				{
@@ -50,24 +50,24 @@ public:
 				}
 
 				callback(it->first, change_type::removed);
-				it = m_paths.erase(it);
+				it = _paths.erase(it);
 			}
 
-			for (const auto& file : std::filesystem::recursive_directory_iterator(m_path))
+			for (const auto& file : std::filesystem::recursive_directory_iterator(_path))
 			{
 				const std::string key = file.path().string();
 				const std::filesystem::file_time_type time = std::filesystem::last_write_time(file);
 
-				if (!m_paths.contains(key))
+				if (!_paths.contains(key))
 				{
-					m_paths[key] = time;
+					_paths[key] = time;
 					callback(file.path(), change_type::created);
 					continue;
 				}
 
-				if (m_paths[key] != time)
+				if (_paths[key] != time)
 				{
-					m_paths[key] = time;
+					_paths[key] = time;
 					callback(file.path(), change_type::modified);
 					continue;
 				}
@@ -76,9 +76,9 @@ public:
 	}
 
 private:
-	std::filesystem::path m_path;
-	std::chrono::seconds m_delay;
-	std::unordered_map<std::string, std::filesystem::file_time_type> m_paths;
+	std::filesystem::path _path;
+	std::chrono::seconds _delay;
+	std::unordered_map<std::string, std::filesystem::file_time_type> _paths;
 };
 
 void report_changes(const std::filesystem::path& path, change_type change)

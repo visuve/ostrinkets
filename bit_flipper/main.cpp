@@ -21,11 +21,11 @@
 
 namespace
 {
-	std::atomic<int> g_signal;
+	std::atomic<int> _signal;
 
 	void signal_handler(int signal)
 	{
-		g_signal = signal;
+		_signal = signal;
 	}
 
 	template<typename T, typename N>
@@ -43,14 +43,14 @@ namespace
 	template <typename T>
 	T since_epoch()
 	{
-		auto now = std::chrono::system_clock::now();
+		const auto now = std::chrono::system_clock::now();
 		return std::chrono::duration_cast<T>(now.time_since_epoch());
 	}
 }
 
 bool resource::flip_random_bit()
 {
-	const uint64_t offset = random_numeric_value<uint64_t>(uint64_t(0), m_size - 1);
+	const uint64_t offset = random_numeric_value<uint64_t>(uint64_t(0), _size - 1);
 	std::optional<std::byte> random_source_byte = read_byte_at(offset);
 
 	if (!random_source_byte.has_value())
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
 		return last_error;
 	}
 
-	while (!g_signal)
+	while (!_signal)
 	{
 		if (!target_resource.flip_random_bit())
 		{

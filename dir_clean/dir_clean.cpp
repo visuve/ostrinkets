@@ -23,11 +23,11 @@ namespace
 {
 	namespace fs = std::filesystem;
 
-	std::atomic<int> g_signal_status = 0;
+	std::atomic<int> _signal_status = 0;
 
 	void signal_handler(int signal)
 	{
-		g_signal_status = signal;
+		_signal_status = signal;
 	}
 
 	const std::set<std::filesystem::path> paths_to_ignore =
@@ -95,9 +95,9 @@ namespace
 
 		for (auto& entry : iter)
 		{
-			if (g_signal_status)
+			if (_signal_status)
 			{
-				put_formatted(" -> skipped, invalid type: %d.\n", g_signal_status.load());
+				put_formatted(" -> skipped, invalid type: %d.\n", _signal_status.load());
 				break;
 			}
 

@@ -12,9 +12,9 @@ namespace fstrinkets
 	public:
 		geom_tree()
 		{
-			m_mesh = std::make_unique<gmesh>();
+			_mesh = std::make_unique<gmesh>();
 
-			if (geom_gettree(m_mesh.get()) != 0)
+			if (geom_gettree(_mesh.get()) != 0)
 			{
 				std::cerr << "Cannot get GEOM tree" << std::endl;
 			}
@@ -22,18 +22,18 @@ namespace fstrinkets
 
 		~geom_tree()
 		{
-			geom_deletetree(m_mesh.get());
-			m_mesh.reset();
+			geom_deletetree(_mesh.get());
+			_mesh.reset();
 		}
 
 		gclass* find_geom_class(const std::string& name)
 		{
-			if (!m_mesh)
+			if (!_mesh)
 			{
 				return nullptr;
 			}
 
-			for (gclass* iter = m_mesh->lg_class.lh_first;
+			for (gclass* iter = _mesh->lg_class.lh_first;
 				iter;
 				iter = iter->lg_class.le_next)
 			{
@@ -48,7 +48,7 @@ namespace fstrinkets
 		}
 
 	private:
-		std::unique_ptr<gmesh> m_mesh;
+		std::unique_ptr<gmesh> _mesh;
 	};
 
 	void fill_drive_info(ggeom* disk_object, drive_info& di)

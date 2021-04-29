@@ -18,26 +18,26 @@ namespace fstrinkets
 	public:
 		com_variant()
 		{
-			VariantInit(&m_value);
+			VariantInit(&_value);
 		}
 
 		~com_variant()
 		{
-			VariantClear(&m_value);
+			VariantClear(&_value);
 		}
 
 		operator VARIANT* ()
 		{
-			return &m_value;
+			return &_value;
 		}
 
 		VARIANT* operator -> ()
 		{
-			return &m_value;
+			return &_value;
 		}
 
 	private:
-		VARIANT m_value;
+		VARIANT _value;
 	};
 
 	std::string to_utf8(const std::wstring& unicode)
@@ -79,16 +79,16 @@ namespace fstrinkets
 	public:
 		wmi_drive_info()
 		{
-			m_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+			_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
-			if (FAILED(m_result))
+			if (FAILED(_result))
 			{
 				std::cerr << "CoInitializeEx failed: 0x"
-					<< std::hex << m_result << std::endl;
+					<< std::hex << _result << std::endl;
 				return;
 			}
 
-			m_result = CoInitializeSecurity(
+			_result = CoInitializeSecurity(
 				nullptr,
 				-1,
 				nullptr,
@@ -99,23 +99,23 @@ namespace fstrinkets
 				EOAC_NONE,
 				0);
 
-			if (FAILED(m_result))
+			if (FAILED(_result))
 			{
 				std::cerr << "CoInitializeSecurity failed: 0x"
-					<< std::hex << m_result << std::endl;
+					<< std::hex << _result << std::endl;
 				return;
 			}
 
-			m_result = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&m_locator));
+			_result = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&_locator));
 
-			if (FAILED(m_result))
+			if (FAILED(_result))
 			{
 				std::cerr << "CoCreateInstance failed: 0x"
-					<< std::hex << m_result << std::endl;
+					<< std::hex << _result << std::endl;
 				return;
 			}
 
-			m_result = m_locator->ConnectServer(
+			_result = _locator->ConnectServer(
 				BSTR(L"root\\CIMV2"),
 				nullptr,
 				nullptr,
@@ -123,12 +123,12 @@ namespace fstrinkets
 				WBEM_FLAG_CONNECT_USE_MAX_WAIT,
 				nullptr,
 				nullptr,
-				&m_service);
+				&_service);
 
-			if (FAILED(m_result))
+			if (FAILED(_result))
 			{
 				std::cerr << "IWbemLocator::ConnectServer failed: 0x"
-					<< std::hex << m_result << std::endl;
+					<< std::hex << _result << std::endl;
 				return;
 			}
 		}
@@ -136,43 +136,43 @@ namespace fstrinkets
 		// https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-diskdrive
 		std::vector<drive_info> list_drives()
 		{
-			if (FAILED(m_result))
+			if (FAILED(_result))
 			{
 				return {};
 			}
 
 			com_ptr<IEnumWbemClassObject> enumerator;
 
-			m_result = m_service->ExecQuery(
+			_result = _service->ExecQuery(
 				BSTR(L"WQL"),
 				BSTR(L"SELECT Caption, DeviceID, Partitions, Size FROM Win32_DiskDrive"),
 				WBEM_FLAG_FORWARD_ONLY,
 				nullptr,
 				&enumerator);
 
-			if (FAILED(m_result))
+			if (FAILED(_result))
 			{
 				std::cerr << "IWbemServices::ExecQuery failed: 0x"
-					<< std::hex << m_result << std::endl;
+					<< std::hex << _result << std::endl;
 				return {};
 			}
 
 			std::vector<drive_info> drives;
 
-			while (SUCCEEDED(m_result))
+			while (SUCCEEDED(_result))
 			{
 				com_ptr<IWbemClassObject> class_object;
 				ULONG count = 0;
-				m_result = enumerator->Next(WBEM_INFINITE, 1, &class_object, &count);
+				_result = enumerator->Next(WBEM_INFINITE, 1, &class_object, &count);
 
-				if (FAILED(m_result))
+				if (FAILED(_result))
 				{
 					std::cerr << "IEnumWbemClassObject::Next failed: 0x"
-						<< std::hex << m_result << std::endl;
+						<< std::hex << _result << std::endl;
 					return drives;
 				}
 
-				if (m_result == WBEM_S_FALSE)
+				if (_result == WBEM_S_FALSE)
 				{
 					return drives;
 				}
@@ -198,12 +198,12 @@ namespace fstrinkets
 			std::any result;
 			com_variant variant;
 
-			m_result = classObject->Get(name, 0, variant, nullptr, nullptr);
+			_result = classObject->Get(name, 0, variant, nullptr, nullptr);
 
-			if (FAILED(m_result) || variant->vt == VT_NULL)
+			if (FAILED(_result) || variant->vt == VT_NULL)
 			{
 				std::wcerr << L"Fecthing " << name << L" failed. HRESULT: 0x"
-					<< std::hex << m_result << std::endl;
+					<< std::hex << _result << std::endl;
 
 				return T();
 			}
@@ -238,9 +238,9 @@ namespace fstrinkets
 			return std::any_cast<T>(result);
 		}
 
-		HRESULT m_result;
-		com_ptr<IWbemLocator> m_locator;
-		com_ptr<IWbemServices> m_service;
+		HRESULT _result;
+		com_ptr<IWbemLocator> _locator;
+		com_ptr<IWbemServices> _service;
 	};
 
 	std::vector<drive_info> get_drive_info()

@@ -37,7 +37,7 @@ OVERLAPPED uint64_to_overlapped(uint64_t offset)
 }
 
 resource::resource(const std::filesystem::path& path, bool is_disk) :
-	m_handle(open_disk_or_file(path.c_str()))
+	_handle(open_disk_or_file(path.c_str()))
 {
 	if (!is_valid())
 	{
@@ -51,7 +51,7 @@ resource::resource(const std::filesystem::path& path, bool is_disk) :
 		constexpr uint32_t disk_geo_size = sizeof(DISK_GEOMETRY);
 
 		if (!DeviceIoControl(
-			m_handle,
+			_handle,
 			IOCTL_DISK_GET_DRIVE_GEOMETRY,
 			nullptr,
 			0,
@@ -64,7 +64,7 @@ resource::resource(const std::filesystem::path& path, bool is_disk) :
 		}
 
 		/*if (!DeviceIoControl(
-			m_handle,
+			_handle,
 			IOCTL_DISK_DELETE_DRIVE_LAYOUT,
 			nullptr,
 			0,
@@ -78,7 +78,7 @@ resource::resource(const std::filesystem::path& path, bool is_disk) :
 
 		assert(bytes_returned == disk_geo_size);
 
-		m_size = disk_geo.Cylinders.QuadPart *
+		_size = disk_geo.Cylinders.QuadPart *
 			disk_geo.TracksPerCylinder *
 			disk_geo.SectorsPerTrack *
 			disk_geo.BytesPerSector;
@@ -87,34 +87,34 @@ resource::resource(const std::filesystem::path& path, bool is_disk) :
 	{
 		LARGE_INTEGER file_size = {};
 
-		if (!GetFileSizeEx(m_handle, &file_size))
+		if (!GetFileSizeEx(_handle, &file_size))
 		{
 			return;
 		}
 
-		m_size = file_size.QuadPart;
+		_size = file_size.QuadPart;
 	}
 
-	std::cout << path << " size is " << m_size << " bytes." << std::endl;
+	std::cout << path << " size is " << _size << " bytes." << std::endl;
 }
 
 resource::~resource()
 {
 	if (is_valid())
 	{
-		CloseHandle(m_handle);
-		m_handle = INVALID_HANDLE_VALUE;
+		CloseHandle(_handle);
+		_handle = INVALID_HANDLE_VALUE;
 	}
 }
 
 bool resource::is_valid() const
 {
-	return m_handle != nullptr && m_handle != INVALID_HANDLE_VALUE;
+	return _handle != nullptr && _handle != INVALID_HANDLE_VALUE;
 }
 
 bool resource::is_empty() const
 {
-	return m_size <= 0;
+	return _size <= 0;
 }
 
 std::optional<std::byte> resource::read_byte_at(uint64_t offset)
@@ -124,7 +124,7 @@ std::optional<std::byte> resource::read_byte_at(uint64_t offset)
 	DWORD bytes_read = 0;
 	OVERLAPPED overlapped = uint64_to_overlapped(offset);
 
-	if (!ReadFile(m_handle, &byte, bytes_to_read, &bytes_read, &overlapped))
+	if (!ReadFile(_handle, &byte, bytes_to_read, &bytes_read, &overlapped))
 	{
 		return std::nullopt;
 	}
@@ -142,7 +142,7 @@ bool resource::write_byte_at(uint64_t offset, std::byte byte)
 	DWORD bytes_written = 0;
 	OVERLAPPED overlapped = uint64_to_overlapped(offset);
 
-	if (!WriteFile(m_handle, &byte, 1, &bytes_written, &overlapped))
+	if (!WriteFile(_handle, &byte, 1, &bytes_written, &overlapped))
 	{
 		return false;
 	}
@@ -152,5 +152,5 @@ bool resource::write_byte_at(uint64_t offset, std::byte byte)
 
 bool resource::flush()
 {
-	return FlushFileBuffers(m_handle);
+	return FlushFileBuffers(_handle);
 }

@@ -10,7 +10,7 @@ namespace fstrinkets
 	public:
 		udev_context()
 		{
-			if (!m_context)
+			if (!_context)
 			{
 				std::cerr << "Could not create udev context!" << std::endl;
 				return;
@@ -19,29 +19,29 @@ namespace fstrinkets
 
 		~udev_context()
 		{
-			for (udev_enumerate* enumerator : m_enumerators)
+			for (udev_enumerate* enumerator : _enumerators)
 			{
 				udev_enumerate_unref(enumerator);
 			}
 
-			if (m_context)
+			if (_context)
 			{
-				udev_unref(m_context);
+				udev_unref(_context);
 			}
 		}
 
 		operator udev* () const
 		{
-			return m_context;
+			return _context;
 		}
 
 		udev_enumerate* create_enumerator()
 		{
-			udev_enumerate* enumerator = udev_enumerate_new(m_context);
+			udev_enumerate* enumerator = udev_enumerate_new(_context);
 
 			if (enumerator)
 			{
-				return m_enumerators.emplace_back(enumerator);
+				return _enumerators.emplace_back(enumerator);
 			}
 
 			std::cerr << "Could not create enumerator!" << std::endl;
@@ -49,15 +49,15 @@ namespace fstrinkets
 		}
 
 	private:
-		udev* m_context = udev_new();
-		std::vector<udev_enumerate*> m_enumerators;
+		udev* _context = udev_new();
+		std::vector<udev_enumerate*> _enumerators;
 	};
 
 	class device
 	{
 	public:
 		device(udev_context& context, udev_list_entry* device_list_entry) :
-			m_context(context)
+			_context(context)
 		{
 			const char* path = udev_list_entry_get_name(device_list_entry);
 
@@ -67,43 +67,43 @@ namespace fstrinkets
 				return;
 			}
 
-			m_device_path = path;
-			m_device = udev_device_new_from_syspath(context, path);
+			_device_path = path;
+			_device = udev_device_new_from_syspath(context, path);
 
-			if (!m_device)
+			if (!_device)
 			{
 				std::cerr << "Failed to get device from path: '"
-					<< m_device_path << "'!" << std::endl;
+					<< _device_path << "'!" << std::endl;
 				return;
 			}
 		}
 
 		~device()
 		{
-			if (m_device)
+			if (_device)
 			{
-				udev_device_unref(m_device);
+				udev_device_unref(_device);
 			}
 		}
 
 		operator udev_device* () const
 		{
-			return m_device;
+			return _device;
 		}
 
 		std::string device_path() const
 		{
-			return m_device_path;
+			return _device_path;
 		}
 
 		std::string device_type() const
 		{
-			const char* type = udev_device_get_devtype(m_device);
+			const char* type = udev_device_get_devtype(_device);
 
 			if (!type)
 			{
 				std::cerr << "Failed to get device type from path: '"
-					<< m_device_path << "'!" << std::endl;
+					<< _device_path << "'!" << std::endl;
 				return {};
 			}
 
@@ -112,12 +112,12 @@ namespace fstrinkets
 
 		std::string system_name() const
 		{
-			const char* system_name = udev_device_get_sysname(m_device);
+			const char* system_name = udev_device_get_sysname(_device);
 
 			if (!system_name)
 			{
 				std::cerr << "Failed to get system name from path: '"
-					<< m_device_path << "'!" << std::endl;
+					<< _device_path << "'!" << std::endl;
 				return {};
 			}
 
@@ -126,8 +126,8 @@ namespace fstrinkets
 
 		udev_list_entry* partitions()
 		{
-			udev_enumerate* enumerator = m_context.create_enumerator();
-			udev_enumerate_add_match_parent(enumerator, m_device);
+			udev_enumerate* enumerator = _context.create_enumerator();
+			udev_enumerate_add_match_parent(enumerator, _device);
 			udev_enumerate_add_match_property(enumerator, "DEVTYPE", "partition");
 			udev_enumerate_scan_devices(enumerator);
 			return udev_enumerate_get_list_entry(enumerator);
@@ -139,9 +139,9 @@ namespace fstrinkets
 		}
 
 	private:
-		udev_context& m_context;
-		udev_device* m_device = nullptr;
-		std::string m_device_path;
+		udev_context& _context;
+		udev_device* _device = nullptr;
+		std::string _device_path;
 	};
 
 
