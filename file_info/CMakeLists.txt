@@ -1,5 +1,5 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-	add_executable(FileInfo "main.cpp" "file_info_win.cpp")
+	add_executable(FileInfo "main.cpp" "file_info_win32.cpp")
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
