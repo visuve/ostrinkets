@@ -1,5 +1,5 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-	add_executable(DriveInfo "main.cpp" "drive_info_win.cpp")
+	add_executable(DriveInfo "main.cpp" "drive_info_win32.cpp")
 	target_link_libraries(DriveInfo wbemuuid)
 endif()
 
