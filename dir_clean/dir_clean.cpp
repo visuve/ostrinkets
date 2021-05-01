@@ -10,10 +10,8 @@
 #ifdef _WIN32
 #include <fcntl.h>
 #include <io.h>
-#define _text(x) L ## x
-#define text(x) _text(x)
-#define put_string(x) _putws(text(x))
-#define put_formatted(x, ...) wprintf_s(text(x), __VA_ARGS__)
+#define put_string(x) _putws(L ## x)
+#define put_formatted(x, ...) wprintf_s(L ## x, __VA_ARGS__)
 #else
 #define put_string(x) puts(x)
 #define put_formatted(x, ...) printf(x, __VA_ARGS__)
