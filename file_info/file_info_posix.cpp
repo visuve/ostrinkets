@@ -30,7 +30,7 @@ namespace fstrinkets
 			}
 		}
 
-		operator int()
+		operator int() const
 		{
 			return _descriptor;
 		}
@@ -54,8 +54,8 @@ namespace fstrinkets
 
 		if (descriptor == -1)
 		{
-			std::cerr << "Failed to open '" << path << "'." << std::endl;
-			return;
+			const std::string message("Failed to open " + path.string());
+			throw std::system_error(errno, std::system_category(), message);
 		}
 
 		std::cout << path << ':' << std::endl;

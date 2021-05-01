@@ -2,11 +2,10 @@
 
 #include <fcntl.h>
 #include <sys/event.h>
-// #include <stdio.h>
-// #include <stdlib.h>
 #include <unistd.h>
 
 #include <iostream>
+#include <system_error>
 
 class file_desciptor
 {
@@ -16,8 +15,8 @@ public:
 	{
 		if (!is_valid())
 		{
-			std::cerr << "open failed: 0x"
-				<< std::hex << errno << std::endl;
+			const std::string message("Failed to open " + path.string());
+			throw std::system_error(errno, std::system_category(), message);
 		}
 	}
 
@@ -61,9 +60,7 @@ void file_watcher::start(const std::function<void()>& callback)
 
 	if (kq == -1)
 	{
-		std::cerr << "kqueue failed: 0x"
-			<< std::hex << errno << std::endl;
-		return;
+		throw std::system_error(errno, std::system_category(), "kqueue failed");
 	}
 
 	struct kevent event = {};
@@ -72,15 +69,12 @@ void file_watcher::start(const std::function<void()>& callback)
 
 	if (kevent(kq, &event, 1, nullptr, 0, nullptr) == -1)
 	{
-		std::cerr << "kevent failed: 0x"
-			<< std::hex << errno << std::endl;
-		return;
+		throw std::system_error(errno, std::system_category(), "kevent failed");
 	}
 
 	if (event.flags & EV_ERROR)
 	{
-		std::cerr << "kevent failed: 0x"
-			<< std::hex << event.data << std::endl;
+		throw std::system_error(event.data, std::system_category(), "kevent failed");
 	}
 
 	struct kevent triggered = {};
@@ -91,9 +85,7 @@ void file_watcher::start(const std::function<void()>& callback)
 
 		if (result == -1)
 		{
-			std::cerr << "kevent poll failed: 0x"
-				<< std::hex << errno << std::endl;
-			return;
+			throw std::system_error(errno, std::system_category(), "kevent poll failed");
 		}
 
 		if (result > 0)

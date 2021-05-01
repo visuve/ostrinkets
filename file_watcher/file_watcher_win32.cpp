@@ -17,8 +17,10 @@ public:
 	{
 		if (!is_valid())
 		{
-			std::cerr << "FindFirstChangeNotification failed: 0x"
-				<< std::hex << GetLastError() << std::endl;
+			throw std::system_error(
+				GetLastError(),
+				std::system_category(),
+				"FindFirstChangeNotification failed");
 		}
 	}
 
@@ -36,10 +38,13 @@ public:
 	{
 		if (!FindNextChangeNotification(_handle))
 		{
-			std::cerr << "FindNextChangeNotification failed: 0x"
-				<< std::hex << GetLastError() << std::endl;
+			throw std::system_error(
+				GetLastError(),
+				std::system_category(),
+				"FindNextChangeNotification failed");
 		}
 	}
+
 	~notification_handle()
 	{
 		if (is_valid() && !FindCloseChangeNotification(_handle))
@@ -61,11 +66,6 @@ file_watcher::file_watcher(const std::filesystem::path& path) :
 void file_watcher::start(const std::function<void()>& callback)
 {
 	notification_handle handle(_path);
-
-	if (!handle.is_valid())
-	{
-		return;
-	}
 
 	while (_run)
 	{

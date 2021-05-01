@@ -1,4 +1,6 @@
 #include "file_info.hpp"
+#include <iostream>
+#include <system_error>
 #include <vector>
 
 #ifdef _WIN32
@@ -23,7 +25,23 @@ int main(int argc, char* argv[])
 
 	for (const std::filesystem::path& path : paths)
 	{
-		print_file_info(path);
+		try
+		{
+			print_file_info(path);
+		}
+		catch (const std::system_error& sys_error)
+		{
+			std::cerr << "An exception occurred:" << std::endl;
+			std::cerr << sys_error.what() << std::endl;
+			std::cerr << "Error code: " << sys_error.code().value() << std::endl;
+			return sys_error.code().value();
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "An exception occurred:" << std::endl;
+			std::cerr << e.what();
+			return EXIT_FAILURE;
+		}
 	}
 
 	return 0;

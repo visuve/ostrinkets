@@ -1,6 +1,7 @@
 #include "drive_info.hpp"
 #include <cassert>
 #include <iostream>
+#include <system_error>
 #include <libudev.h> // apt install libudev-dev
 
 namespace fstrinkets
@@ -12,8 +13,7 @@ namespace fstrinkets
 		{
 			if (!_context)
 			{
-				std::cerr << "Could not create udev context!" << std::endl;
-				return;
+				throw std::system_error(errno, std::system_category(), "udev_new failed");
 			}
 		}
 
@@ -39,13 +39,13 @@ namespace fstrinkets
 		{
 			udev_enumerate* enumerator = udev_enumerate_new(_context);
 
-			if (enumerator)
+			if (!enumerator)
 			{
-				return _enumerators.emplace_back(enumerator);
+				throw std::system_error(errno, std::system_category(), "udev_enumerate_new failed");
+				
 			}
 
-			std::cerr << "Could not create enumerator!" << std::endl;
-			return nullptr;
+			return _enumerators.emplace_back(enumerator);
 		}
 
 	private:
@@ -63,8 +63,7 @@ namespace fstrinkets
 
 			if (!path)
 			{
-				std::cerr << "Failed to get device path!" << std::endl;
-				return;
+				throw std::system_error(errno, std::system_category(), "udev_list_entry_get_name failed");
 			}
 
 			_device_path = path;
@@ -72,9 +71,7 @@ namespace fstrinkets
 
 			if (!_device)
 			{
-				std::cerr << "Failed to get device from path: '"
-					<< _device_path << "'!" << std::endl;
-				return;
+				throw std::system_error(errno, std::system_category(), "udev_device_new_from_syspath failed");
 			}
 		}
 
@@ -102,9 +99,7 @@ namespace fstrinkets
 
 			if (!type)
 			{
-				std::cerr << "Failed to get device type from path: '"
-					<< _device_path << "'!" << std::endl;
-				return {};
+				throw std::system_error(errno, std::system_category(), "udev_device_get_devtype failed");
 			}
 
 			return type;
@@ -116,9 +111,7 @@ namespace fstrinkets
 
 			if (!system_name)
 			{
-				std::cerr << "Failed to get system name from path: '"
-					<< _device_path << "'!" << std::endl;
-				return {};
+				throw std::system_error(errno, std::system_category(), "udev_device_get_sysname failed");
 			}
 
 			return system_name;
@@ -151,61 +144,39 @@ namespace fstrinkets
 
 		if (!path)
 		{
-			std::cerr << "Failed to get file system path from: '"
-				<< device.device_path() << "'!" << std::endl;
+			throw std::system_error(errno, std::system_category(), "udev_device_get_devnode failed");
 		}
-		else
-		{
-			di.path = path;
-		}
+
+		di.path = path;
 
 		const char* description = udev_device_get_property_value(device, "ID_MODEL");
 
 		if (!description)
 		{
-			std::cerr << "Failed to get ID_MODEL from: '"
-				<< device.device_path() << "'!" << std::endl;
-		}
-		else
-		{
-			di.description = description;
+			throw std::system_error(errno, std::system_category(), "udev_device_get_property_value failed");
 		}
 
+		di.description = description;
 
 		// https://people.redhat.com/msnitzer/docs/io-limits.txt
 		const char* size_str = udev_device_get_sysattr_value(device, "size");
 		const char* block_size_str = udev_device_get_sysattr_value(device, "queue/logical_block_size");
 
-		if (!size_str)
+		if (!size_str || !block_size_str)
 		{
-			std::cerr << "Failed to get size from: '"
-				<< device.device_path() << "'!" << std::endl;
-		}
-		else if (!block_size_str)
-		{
-			std::cerr << "Failed to get block size from: '"
-				<< device.device_path() << "'!" << std::endl;
-		}
-		else
-		{
-			uint64_t size = strtoull(size_str, nullptr, 10);
-			uint64_t block_size = strtoull(block_size_str, nullptr, 10);
-			assert(size && block_size);
-			di.capacity = size * block_size;
+			throw std::system_error(errno, std::system_category(), "udev_device_get_sysattr_value failed");
 		}
 
+		uint64_t size = strtoull(size_str, nullptr, 10);
+		uint64_t block_size = strtoull(block_size_str, nullptr, 10);
+		assert(size && block_size);
+		di.capacity = size * block_size;
 	}
 
 	std::vector<drive_info> get_drive_info()
 	{
 		udev_context context;
 		udev_enumerate* enumerator = context.create_enumerator();
-
-		if (!enumerator)
-		{
-			return {};
-		}
-
 		udev_enumerate_add_match_subsystem(enumerator, "block");
 		udev_enumerate_scan_devices(enumerator);
 

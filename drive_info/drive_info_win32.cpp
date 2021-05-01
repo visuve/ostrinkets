@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cinttypes>
 #include <iostream>
+#include <system_error>
 #include <WbemCli.h>
 #include <Windows.h>
 #include <wrl/client.h>
@@ -40,13 +41,14 @@ namespace fstrinkets
 		VARIANT _value;
 	};
 
-	std::string to_utf8(const std::wstring& unicode)
+	std::string to_utf8(std::wstring_view unicode)
 	{
 		std::string utf8;
 
 		int required = WideCharToMultiByte(
 			CP_UTF8,
-			0, unicode.c_str(),
+			0,
+			unicode.data(),
 			static_cast<int>(unicode.length()),
 			nullptr, 0,
 			nullptr,
@@ -58,7 +60,7 @@ namespace fstrinkets
 			int result = WideCharToMultiByte(
 				CP_UTF8,
 				0,
-				unicode.c_str(),
+				unicode.data(),
 				static_cast<int>(unicode.length()),
 				&utf8.front(),
 				required,
@@ -83,9 +85,7 @@ namespace fstrinkets
 
 			if (FAILED(_result))
 			{
-				std::cerr << "CoInitializeEx failed: 0x"
-					<< std::hex << _result << std::endl;
-				return;
+				throw std::system_error(_result, std::system_category(), "CoInitializeEx failed");
 			}
 
 			_result = CoInitializeSecurity(
@@ -101,18 +101,14 @@ namespace fstrinkets
 
 			if (FAILED(_result))
 			{
-				std::cerr << "CoInitializeSecurity failed: 0x"
-					<< std::hex << _result << std::endl;
-				return;
+				throw std::system_error(_result, std::system_category(), "CoInitializeSecurity failed");
 			}
 
 			_result = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&_locator));
 
 			if (FAILED(_result))
 			{
-				std::cerr << "CoCreateInstance failed: 0x"
-					<< std::hex << _result << std::endl;
-				return;
+				throw std::system_error(_result, std::system_category(), "CoCreateInstance failed");
 			}
 
 			_result = _locator->ConnectServer(
@@ -127,9 +123,7 @@ namespace fstrinkets
 
 			if (FAILED(_result))
 			{
-				std::cerr << "IWbemLocator::ConnectServer failed: 0x"
-					<< std::hex << _result << std::endl;
-				return;
+				throw std::system_error(_result, std::system_category(), "IWbemLocator::ConnectServer failed");
 			}
 		}
 
@@ -138,7 +132,7 @@ namespace fstrinkets
 		{
 			if (FAILED(_result))
 			{
-				return {};
+				throw std::logic_error("wmi_drive_info not initialized properly.");
 			}
 
 			com_ptr<IEnumWbemClassObject> enumerator;
@@ -152,9 +146,7 @@ namespace fstrinkets
 
 			if (FAILED(_result))
 			{
-				std::cerr << "IWbemServices::ExecQuery failed: 0x"
-					<< std::hex << _result << std::endl;
-				return {};
+				throw std::system_error(_result, std::system_category(), "IWbemServices::ExecQuery failed");
 			}
 
 			std::vector<drive_info> drives;
@@ -167,9 +159,7 @@ namespace fstrinkets
 
 				if (FAILED(_result))
 				{
-					std::cerr << "IEnumWbemClassObject::Next failed: 0x"
-						<< std::hex << _result << std::endl;
-					return drives;
+					throw std::system_error(_result, std::system_category(), "IEnumWbemClassObject::Next failed");
 				}
 
 				if (_result == WBEM_S_FALSE)
@@ -202,10 +192,8 @@ namespace fstrinkets
 
 			if (FAILED(_result) || variant->vt == VT_NULL)
 			{
-				std::wcerr << L"Fecthing " << name << L" failed. HRESULT: 0x"
-					<< std::hex << _result << std::endl;
-
-				return T();
+				const std::string message("IWbemClassObject::Get(" + to_utf8(name) + ')');
+				throw std::system_error(_result, std::system_category(), message);
 			}
 
 			assert(type == variant->vt);

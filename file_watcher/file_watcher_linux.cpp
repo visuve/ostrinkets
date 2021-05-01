@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <system_error>
 #include <iostream>
 
 using millisecond = std::chrono::duration<int, std::ratio<1, 1000>>;
@@ -18,17 +19,14 @@ public:
 
 		if (_inotify == -1)
 		{
-			std::cerr << "inotify_init1 failed: 0x"
-				<< std::hex << errno << std::endl;
-			return;
+			throw std::system_error(errno, std::system_category(), "inotify_init1 failed");
 		}
 
 		_watch = inotify_add_watch(_inotify, path.c_str(), IN_CREATE | IN_DELETE);
 
 		if (_watch == -1)
 		{
-			std::cerr << "inotify_add_watch failed: 0x"
-				<< std::hex << errno << std::endl;
+			throw std::system_error(errno, std::system_category(), "inotify_add_watch failed");
 		}
 	}
 
@@ -43,11 +41,11 @@ public:
 		poll_inotify.fd = _inotify;
 		poll_inotify.events = POLLIN;
 
-		if (poll(&poll_inotify, 1, timeout.count()) == -1)
+		int poll_result = poll(&poll_inotify, 1, timeout.count());
+
+		if (poll_result == -1)
 		{
-			std::cerr << "poll failed: 0x"
-				<< std::hex << errno << std::endl;
-			return -1;
+			throw std::system_error(poll_result, std::system_category(), "poll failed");
 		}
 
 		return poll_inotify.revents;
@@ -88,11 +86,6 @@ file_watcher::file_watcher(const std::filesystem::path& path) :
 void file_watcher::start(const std::function<void()>& callback)
 {
 	notification_descriptor notification(_path);
-
-	if (!notification.is_valid())
-	{
-		return;
-	}
 
 	while (_run)
 	{

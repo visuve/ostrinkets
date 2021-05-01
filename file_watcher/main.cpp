@@ -36,9 +36,24 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	fw = std::make_unique<file_watcher>(argv[1]);
-
-	fw->start(report_changes);
+	try
+	{
+		fw = std::make_unique<file_watcher>(argv[1]);
+		fw->start(report_changes);
+	}
+	catch (const std::system_error& sys_error)
+	{
+		std::cerr << "An exception occurred:" << std::endl;
+		std::cerr << sys_error.what() << std::endl;
+		std::cerr << "Error code: " << sys_error.code().value() << std::endl;
+		return sys_error.code().value();
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "An exception occurred:" << std::endl;
+		std::cerr << e.what();
+		return EXIT_FAILURE;
+	}
 
 	return 0;
 }

@@ -59,24 +59,20 @@ namespace
 		std::this_thread::sleep_for(sleep_time);
 	}
 
-	bool write_and_flush(std::ofstream& output, std::span<char> buffer)
+	void write_and_flush(std::ofstream& output, std::span<char> buffer)
 	{
 		if (!output.write(buffer.data(), buffer.size_bytes()))
 		{
-			std::cerr << "Failed to write!" << std::endl;
-			return false;
+			throw std::ios_base::failure("Failed to write output");
 		}
 
 		if (!output.flush())
 		{
-			std::cerr << "Failed to flush!" << std::endl;
-			return false;
+			throw std::ios_base::failure("Failed to flush output");
 		}
 
 		std::cout << since_epoch<std::chrono::seconds>().count()
 			<< " wrote " << buffer.size_bytes() << "bytes" << std::endl;
-
-		return true;
 	}
 
 	int sloth_copy(
@@ -90,8 +86,8 @@ namespace
 
 			if (!input)
 			{
-				std::cerr << "Failed to open: '" << input_path << "' for reading!" << std::endl;
-				return EIO;
+				const std::string message = "Failed to open: " + input_path.string();
+				throw std::ios_base::failure(message);
 			}
 
 			std::ofstream output(output_path, std::ios::binary);
@@ -99,8 +95,8 @@ namespace
 
 			if (!output)
 			{
-				std::cerr << "Failed to open: '" << output_path << "' for writing!" << std::endl;
-				return EIO;
+				const std::string message = "Failed to open: " + output_path.string();
+				throw std::ios_base::failure(message);
 			}
 
 			std::array<char, 0x200> buffer;
@@ -121,10 +117,7 @@ namespace
 
 				sleep_for_random_time();
 
-				if (!write_and_flush(output, { buffer.begin(), static_cast<size_t>(bytes) }))
-				{
-					return EIO;
-				}
+				write_and_flush(output, { buffer.begin(), static_cast<size_t>(bytes) });
 			}
 
 			return EXIT_SUCCESS;
@@ -163,9 +156,17 @@ int main(int argc, char** argv)
 
 		return sloth_copy(argv[1], argv[2]);
 	}
+	catch (const std::system_error& sys_error)
+	{
+		std::cerr << "An exception occurred:" << std::endl;
+		std::cerr << sys_error.what() << std::endl;
+		std::cerr << "Error code: " << sys_error.code().value() << std::endl;
+		return sys_error.code().value();
+	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "An exception occurred: " << e.what() << std::endl;
+		std::cerr << "An exception occurred:" << std::endl;
+		std::cerr << e.what();
 	}
 
 	return EXIT_FAILURE;

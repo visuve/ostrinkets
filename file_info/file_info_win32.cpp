@@ -21,7 +21,7 @@ namespace fstrinkets
 			}
 		}
 
-		operator HANDLE()
+		operator HANDLE() const
 		{
 			return _handle;
 		}
@@ -83,8 +83,9 @@ namespace fstrinkets
 
 		if (!handle)
 		{
-			std::wcerr << L"Failed to open '" << path << L"'." << std::endl;
-			return;
+			const std::string message("Failed to open " + path.string());
+			throw std::system_error(GetLastError(), std::system_category(), message);
+
 		}
 
 		std::wcout << path << ':' << std::endl;

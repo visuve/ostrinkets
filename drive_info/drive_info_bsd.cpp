@@ -1,5 +1,6 @@
 #include "drive_info.hpp"
 #include <iostream>
+#include <system_error>
 #include <cinttypes>
 #include <cstring>
 #include <libgeom.h>
@@ -10,29 +11,26 @@ namespace fstrinkets
 	class geom_tree
 	{
 	public:
-		geom_tree()
+		geom_tree() :
+			_result(geom_gettree(_mesh.get()))
 		{
-			_mesh = std::make_unique<gmesh>();
-
-			if (geom_gettree(_mesh.get()) != 0)
+			if (_result != 0)
 			{
-				std::cerr << "Cannot get GEOM tree" << std::endl;
+				throw std::system_error(_result, std::system_category(), "geom_gettree failed");
 			}
 		}
 
 		~geom_tree()
 		{
-			geom_deletetree(_mesh.get());
-			_mesh.reset();
+			if (_result == 0)
+			{
+				geom_deletetree(_mesh.get());
+				_mesh.reset();
+			}
 		}
 
-		gclass* find_geom_class(const std::string& name)
+		gclass* find_geom_class(std::string_view name)
 		{
-			if (!_mesh)
-			{
-				return nullptr;
-			}
-
 			for (gclass* iter = _mesh->lg_class.lh_first;
 				iter;
 				iter = iter->lg_class.le_next)
@@ -43,20 +41,20 @@ namespace fstrinkets
 				}
 			}
 
-			std::cerr << "Class: " << name << " not found" << std::endl;
-			return nullptr;
+			const std::string message = "Class: " + name + " not found";
+			throw std::invalid_argument(message);
 		}
 
 	private:
-		std::unique_ptr<gmesh> _mesh;
+		std::unique_ptr<gmesh> _mesh = std::make_unique<gmesh>();
+		int _result;
 	};
 
 	void fill_drive_info(ggeom* disk_object, drive_info& di)
 	{
 		if (!disk_object)
 		{
-			std::cerr << "Invalid disk object!" << std::endl;
-			return;
+			throw std::invalid_argument("invalid disk object");
 		}
 
 		for (gprovider* provider = disk_object->lg_provider.lh_first;
@@ -82,8 +80,7 @@ namespace fstrinkets
 	{
 		if (!partition_object)
 		{
-			std::cerr << "Invalid partition object!" << std::endl;
-			return;
+			throw std::invalid_argument("invalid partition object");
 		}
 
 		if (di.path.compare(partition_object->lg_name) != 0)
@@ -104,13 +101,7 @@ namespace fstrinkets
 	std::vector<drive_info> get_drive_info()
 	{
 		geom_tree tree;
-
 		gclass* disk_class = tree.find_geom_class("DISK");
-
-		if (!disk_class)
-		{
-			return {};
-		}
 
 		std::vector<drive_info> drives;
 
@@ -124,11 +115,6 @@ namespace fstrinkets
 		}
 
 		gclass* partition_class = tree.find_geom_class("PART");
-
-		if (!partition_class)
-		{
-			return {};
-		}
 
 		for (ggeom* partition_object = partition_class->lg_geom.lh_first;
 			partition_object;
