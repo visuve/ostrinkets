@@ -31,18 +31,15 @@ namespace
 		return T(distribution(engine));
 	}
 
-	template <typename T>
-	T since_epoch()
+	inline time_t timestamp()
 	{
-		auto now = std::chrono::system_clock::now();
-		return std::chrono::duration_cast<T>(now.time_since_epoch());
+		return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	}
 
-	template <size_t N>
-	std::streamsize read_random_number_of_bytes(std::ifstream& input, std::array<char, N>& buffer)
+	std::streamsize read_random_number_of_bytes(std::ifstream& input, std::span<char> buffer)
 	{
 		const auto bytes_to_read =
-			random_numeric_value<std::streamsize>(size_t(1), buffer.size());
+			random_numeric_value<std::streamsize>(size_t(1), buffer.size_bytes());
 
 		input.read(buffer.data(), bytes_to_read);
 
@@ -53,8 +50,7 @@ namespace
 	{
 		const auto sleep_time = random_numeric_value<std::chrono::milliseconds>(1, 20);
 
-		std::cout << since_epoch<std::chrono::seconds>().count()
-			<< " sleeping for " << sleep_time.count() << "ms..." << std::endl;
+		std::cout << timestamp() << " sleeping for " << sleep_time.count() << "ms..." << std::endl;
 
 		std::this_thread::sleep_for(sleep_time);
 	}
@@ -71,64 +67,41 @@ namespace
 			throw std::ios_base::failure("Failed to flush output");
 		}
 
-		std::cout << since_epoch<std::chrono::seconds>().count()
-			<< " wrote " << buffer.size_bytes() << "bytes" << std::endl;
+		std::cout << timestamp() << " wrote " << buffer.size_bytes() << " bytes" << std::endl;
 	}
 
-	int sloth_copy(
+	void sloth_copy(
 		const std::filesystem::path& input_path,
 		const std::filesystem::path& output_path)
 	{
-		try
+		std::ifstream input(input_path, std::ios::binary);
+		input.exceptions(std::istream::badbit);
+
+		std::ofstream output(output_path, std::ios::binary);
+		output.exceptions(std::istream::failbit | std::istream::badbit);
+
+		std::array<char, 0x200> buffer;
+
+		while (!g_signal && input)
 		{
-			std::ifstream input(input_path, std::ios::binary);
-			input.exceptions(std::istream::badbit);
+			const std::streamsize bytes = read_random_number_of_bytes(input, buffer);
 
-			if (!input)
+			if (bytes <= 0)
 			{
-				const std::string message = "Failed to open: " + input_path.string();
-				throw std::ios_base::failure(message);
+				throw std::ios_base::failure("No data available");
 			}
 
-			std::ofstream output(output_path, std::ios::binary);
-			output.exceptions(std::istream::failbit | std::istream::badbit);
-
-			if (!output)
+			if (g_signal)
 			{
-				const std::string message = "Failed to open: " + output_path.string();
-				throw std::ios_base::failure(message);
+				return;
 			}
 
-			std::array<char, 0x200> buffer;
+			sleep_for_random_time();
 
-			while (!g_signal && input)
-			{
-				const std::streamsize bytes = read_random_number_of_bytes(input, buffer);
-
-				if (bytes <= 0)
-				{
-					return EIO;
-				}
-
-				if (g_signal)
-				{
-					return ECANCELED;
-				}
-
-				sleep_for_random_time();
-
-				write_and_flush(output, { buffer.begin(), static_cast<size_t>(bytes) });
-			}
-
-			return EXIT_SUCCESS;
+			write_and_flush(output, { buffer.begin(), static_cast<size_t>(bytes) });
 		}
-		catch (const std::ios::failure& e)
-		{
-			std::cerr << "An I/O excetion occurred: " << e.what() << std::endl;
-		}
-
-		return EIO;
 	}
+
 }
 
 int main(int argc, char** argv)
@@ -154,7 +127,9 @@ int main(int argc, char** argv)
 			return ENOENT;
 		}
 
-		return sloth_copy(argv[1], argv[2]);
+		sloth_copy(argv[1], argv[2]);
+
+		return EXIT_SUCCESS;
 	}
 	catch (const std::system_error& sys_error)
 	{
