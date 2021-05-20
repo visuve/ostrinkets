@@ -25,6 +25,9 @@
 ### file_watcher
 - Polls for file changes in a folder
 
+### perus64
+- A simple base64 encoder & decoder
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD

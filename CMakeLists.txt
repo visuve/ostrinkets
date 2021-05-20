@@ -24,3 +24,5 @@ add_subdirectory("file_info")
 add_subdirectory("bit_flipper")
 add_subdirectory("file_watcher_simple")
 add_subdirectory("file_watcher")
+add_subdirectory("perus64")
+

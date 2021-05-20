@@ -41,7 +41,7 @@ namespace fstrinkets
 				}
 			}
 
-			const std::string message = "Class: " + name + " not found";
+			const std::string message = "Class: " + std::string(name) + " not found";
 			throw std::invalid_argument(message);
 		}
 

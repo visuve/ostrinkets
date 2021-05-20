@@ -1,0 +1,7 @@
+if(MSVC)
+	add_executable(Perus64Decode "perus64_encode.cpp")
+	add_executable(Perus64Encode "perus64_decode.cpp")
+else()
+	add_executable(perus64_encode "perus64_encode.cpp")
+	add_executable(perus64_decode "perus64_decode.cpp")
+endif()
