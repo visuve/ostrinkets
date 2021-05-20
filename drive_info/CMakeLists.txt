@@ -5,7 +5,7 @@ endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	add_executable(drive_info "main.cpp" "drive_info_linux.cpp")
-	target_link_libraries(drive_info stdc++fs udev)
+	target_link_libraries(drive_info udev)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
