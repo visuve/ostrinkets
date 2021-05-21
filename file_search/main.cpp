@@ -3,15 +3,15 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <regex>
 #include <string_view>
-#include <vector>
 
 constexpr size_t buffer_size = 0x1000; // 4kib
 
-std::vector<uint32_t> lines_containing(std::istream& input, std::string_view word)
+std::map<uint32_t, std::string> lines_containing(std::istream& input, std::string_view word)
 {
-	std::vector<uint32_t> results;
+	std::map<uint32_t, std::string> results;
 	std::array<char, buffer_size> buffer = {};
 
 	for (uint32_t line_number = 1; input.getline(buffer.data(), buffer_size, '\n'); ++line_number)
@@ -27,16 +27,16 @@ std::vector<uint32_t> lines_containing(std::istream& input, std::string_view wor
 
 		if (view.find(word) != std::string::npos)
 		{
-			results.emplace_back(line_number);
+			results.emplace(line_number, view);
 		}
 	}
 
 	return results;
 }
 
-std::vector<size_t> lines_matching(std::istream& input, const std::regex& regex)
+std::map<size_t, std::string> lines_matching(std::istream& input, const std::regex& regex)
 {
-	std::vector<size_t> results;
+	std::map<size_t, std::string> results;
 	std::array<char, buffer_size> buffer = {};
 
 	for (size_t line_number = 1; input.getline(buffer.data(), buffer_size, '\n'); ++line_number)
@@ -50,9 +50,9 @@ std::vector<size_t> lines_matching(std::istream& input, const std::regex& regex)
 
 		const std::string_view view(buffer.data(), static_cast<size_t>(bytes_read));
 
-		if(std::regex_search(view.cbegin(), view.cend(), regex))
+		if (std::regex_search(view.cbegin(), view.cend(), regex))
 		{
-			results.push_back(line_number);
+			results.emplace(line_number, view);
 		}
 	}
 
@@ -80,9 +80,9 @@ int main(int argc, char** argv)
 			{
 				std::ifstream file(file_path.path());
 
-				for (uint32_t line_number : lines_containing(file, search_word))
+				for (auto& [line_number, line] : lines_containing(file, search_word))
 				{
-					std::cout << file_path << ':' << line_number << std::endl;
+					std::cout << file_path << ':' << line_number << ':' << line << std::endl;
 				}
 			}
 			catch (const std::exception& e)
@@ -101,9 +101,9 @@ int main(int argc, char** argv)
 			{
 				std::ifstream file(file_path.path());
 
-				for (uint32_t line_number : lines_matching(file, regex))
+				for (auto& [line_number, line] : lines_matching(file, regex))
 				{
-					std::cout << file_path << ':' << line_number << std::endl;
+					std::cout << file_path << ':' << line_number << ':' << line << std::endl;
 				}
 			}
 			catch (const std::exception& e)
