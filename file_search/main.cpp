@@ -9,12 +9,12 @@
 
 constexpr size_t buffer_size = 0x1000; // 4kib
 
-std::vector<size_t> lines_containing(std::istream& input, std::string_view word)
+std::vector<uint32_t> lines_containing(std::istream& input, std::string_view word)
 {
-	std::vector<size_t> results;
+	std::vector<uint32_t> results;
 	std::array<char, buffer_size> buffer = {};
 
-	for (size_t line_number = 1; input.getline(buffer.data(), buffer_size, '\n'); ++line_number)
+	for (uint32_t line_number = 1; input.getline(buffer.data(), buffer_size, '\n'); ++line_number)
 	{
 		const std::streamsize bytes_read = input.gcount();
 
@@ -27,7 +27,7 @@ std::vector<size_t> lines_containing(std::istream& input, std::string_view word)
 
 		if (view.find(word) != std::string::npos)
 		{
-			results.push_back(line_number);
+			results.emplace_back(line_number);
 		}
 	}
 
@@ -54,7 +54,6 @@ std::vector<size_t> lines_matching(std::istream& input, const std::regex& regex)
 		{
 			results.push_back(line_number);
 		}
-
 	}
 
 	return results;
@@ -81,7 +80,7 @@ int main(int argc, char** argv)
 			{
 				std::ifstream file(file_path.path());
 
-				for (size_t line_number : lines_containing(file, search_word))
+				for (uint32_t line_number : lines_containing(file, search_word))
 				{
 					std::cout << file_path << ':' << line_number << std::endl;
 				}
@@ -94,7 +93,7 @@ int main(int argc, char** argv)
 	}
 	else if(mode == "regex")
 	{
-		const std::regex regex(argv[3], std::regex::icase);
+		const std::regex regex(argv[3], std::regex::grep | std::regex::icase);
 
 		for (auto file_path : std::filesystem::recursive_directory_iterator(path))
 		{
@@ -102,7 +101,7 @@ int main(int argc, char** argv)
 			{
 				std::ifstream file(file_path.path());
 
-				for (size_t line_number : lines_matching(file, regex))
+				for (uint32_t line_number : lines_matching(file, regex))
 				{
 					std::cout << file_path << ':' << line_number << std::endl;
 				}
