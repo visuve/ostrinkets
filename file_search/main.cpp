@@ -59,11 +59,16 @@ std::map<size_t, std::string> lines_matching(std::istream& input, const std::reg
 	return results;
 }
 
+void print_usage(const std::filesystem::path& executable)
+{
+	std::cout << "Usage: " << executable << " <folder> <mode> <expression>" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
 	if (argc < 4)
 	{
-		std::cout << "Usage: " << argv[0] << " <folder> <mode> <expression>" << std::endl;
+		print_usage(argv[0]);
 		return EINVAL;
 	}
 
@@ -74,20 +79,22 @@ int main(int argc, char** argv)
 	{
 		const std::string search_word(argv[3]);
 
-		for (auto file_path : std::filesystem::recursive_directory_iterator(path))
+		for (const auto& iter : std::filesystem::recursive_directory_iterator(path))
 		{
+			const std::filesystem::path& file_path = iter.path();
+
 			try
 			{
-				std::ifstream file(file_path.path());
+				std::ifstream file(file_path);
 
-				for (auto& [line_number, line] : lines_containing(file, search_word))
+				for (const auto& [line_number, line] : lines_containing(file, search_word))
 				{
 					std::cout << file_path << ':' << line_number << ':' << line << std::endl;
 				}
 			}
 			catch (const std::exception& e)
 			{
-				std::cerr << "An exception occurred: " << e.what() << std::endl;
+				std::cerr << "Failed to process: " << file_path << ": " << e.what() << std::endl;
 			}
 		}
 	}
@@ -95,25 +102,28 @@ int main(int argc, char** argv)
 	{
 		const std::regex regex(argv[3], std::regex::grep | std::regex::icase);
 
-		for (auto file_path : std::filesystem::recursive_directory_iterator(path))
+		for (const auto& iter: std::filesystem::recursive_directory_iterator(path))
 		{
+			const std::filesystem::path& file_path = iter.path();
+
 			try
 			{
-				std::ifstream file(file_path.path());
+				std::ifstream file(file_path);
 
-				for (auto& [line_number, line] : lines_matching(file, regex))
+				for (const auto& [line_number, line] : lines_matching(file, regex))
 				{
 					std::cout << file_path << ':' << line_number << ':' << line << std::endl;
 				}
 			}
 			catch (const std::exception& e)
 			{
-				std::cerr << "An exception occurred: " << e.what() << std::endl;
+				std::cerr << "Failed to process: " << file_path << ": " << e.what() << std::endl;
 			}
 		}
 	}
 	else
 	{
+		print_usage(argv[0]);
 		return EINVAL;
 	}
 
