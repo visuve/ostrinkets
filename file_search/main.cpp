@@ -2,6 +2,7 @@
 #include <array>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <regex>
@@ -34,12 +35,12 @@ std::map<uint32_t, std::string> lines_containing(std::istream& input, std::strin
 	return results;
 }
 
-std::map<size_t, std::string> lines_matching(std::istream& input, const std::regex& regex)
+std::map<uint32_t, std::string> lines_matching(std::istream& input, const std::regex& regex)
 {
-	std::map<size_t, std::string> results;
+	std::map<uint32_t, std::string> results;
 	std::array<char, buffer_size> buffer = {};
 
-	for (size_t line_number = 1; input.getline(buffer.data(), buffer_size, '\n'); ++line_number)
+	for (uint32_t line_number = 1; input.getline(buffer.data(), buffer_size, '\n'); ++line_number)
 	{
 		const std::streamsize bytes_read = input.gcount();
 
@@ -57,6 +58,30 @@ std::map<size_t, std::string> lines_matching(std::istream& input, const std::reg
 	}
 
 	return results;
+}
+
+void search(
+		const std::filesystem::path& path,
+		const std::function<std::map<uint32_t, std::string>(std::istream&)>& search_function)
+{
+	for (const auto& iter : std::filesystem::recursive_directory_iterator(path))
+	{
+		const std::filesystem::path& file_path = iter.path();
+
+		try
+		{
+			std::ifstream file(file_path);
+
+			for (const auto& [line_number, line] : search_function(file))
+			{
+				std::cout << file_path << ':' << line_number << ':' << line << std::endl;
+			}
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Failed to process: " << file_path << ": " << e.what() << std::endl;
+		}
+	}
 }
 
 void print_usage(const std::filesystem::path& executable)
@@ -78,48 +103,12 @@ int main(int argc, char** argv)
 	if (mode == "plain")
 	{
 		const std::string search_word(argv[3]);
-
-		for (const auto& iter : std::filesystem::recursive_directory_iterator(path))
-		{
-			const std::filesystem::path& file_path = iter.path();
-
-			try
-			{
-				std::ifstream file(file_path);
-
-				for (const auto& [line_number, line] : lines_containing(file, search_word))
-				{
-					std::cout << file_path << ':' << line_number << ':' << line << std::endl;
-				}
-			}
-			catch (const std::exception& e)
-			{
-				std::cerr << "Failed to process: " << file_path << ": " << e.what() << std::endl;
-			}
-		}
+		search(path, std::bind(lines_containing, std::placeholders::_1, search_word));
 	}
 	else if(mode == "regex")
 	{
 		const std::regex regex(argv[3], std::regex::grep | std::regex::icase);
-
-		for (const auto& iter: std::filesystem::recursive_directory_iterator(path))
-		{
-			const std::filesystem::path& file_path = iter.path();
-
-			try
-			{
-				std::ifstream file(file_path);
-
-				for (const auto& [line_number, line] : lines_matching(file, regex))
-				{
-					std::cout << file_path << ':' << line_number << ':' << line << std::endl;
-				}
-			}
-			catch (const std::exception& e)
-			{
-				std::cerr << "Failed to process: " << file_path << ": " << e.what() << std::endl;
-			}
-		}
+		search(path, std::bind(lines_matching, std::placeholders::_1, regex));
 	}
 	else
 	{
