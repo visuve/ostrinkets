@@ -28,6 +28,9 @@
 ### perus64
 - A simple base64 encoder & decoder
 
+### file_search
+- Search files for certain content
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD
