@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+project("fstrinkets")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CXX_STANDARD_REQUIRED ON)
-
-project("fstrinkets")
 
 if(MSVC)
 	add_compile_options(/W4 /WX /MP)

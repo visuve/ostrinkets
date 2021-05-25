@@ -8,32 +8,32 @@
 
 namespace
 {
-	double entropy(std::basic_istream<std::byte>& input_stream)
+	float entropy(std::istream& input_stream)
 	{
-		std::vector<std::byte> buffer(0x10000);
-		std::array<uint64_t, 0xFF> frequencies = {};
-		std::streamsize total_bytes_read = 0;
+		std::array<char, 0x1000> buffer = {};
+		std::array<float, 0xFF> frequencies = {};
+		float total_bytes_read = 0.0;
 
 		while (input_stream)
 		{
 			input_stream.read(buffer.data(), buffer.size());
 
-			std::streamsize bytes_read = input_stream.gcount();
+			const std::streamsize bytes_read = input_stream.gcount();
 
 			for (std::streamsize i = 0; i < bytes_read; ++i)
 			{
-				std::byte character = buffer[i];
-				++frequencies[static_cast<size_t>(character)];
+				const uint8_t byte = static_cast<uint8_t>(buffer[i]);
+				++frequencies[byte];
 			}
 
 			total_bytes_read += bytes_read;
 		}
 
-		double entropy = 0;
+		float entropy = 0;
 
-		for (uint64_t value : frequencies)
+		for (float value : frequencies)
 		{
-			double frequency = value / double(total_bytes_read);
+			float frequency = value / total_bytes_read;
 			entropy -= frequency * std::log2(frequency);
 		}
 
@@ -59,13 +59,15 @@ int main(int argc, char** argv)
 			return ENOENT;
 		}
 
-		std::basic_ifstream<std::byte> input_stream(input_path, std::ios::binary);
+		std::ifstream input_stream(input_path, std::ios::binary);
 
 		if (!input_stream)
 		{
 			std::cerr << "Failed to open: '" << input_path << "'!" << std::endl;
 			return ENOENT;
 		}
+
+		input_stream.exceptions(std::ios::badbit);
 
 		std::cout << input_path << '\t' << entropy(input_stream) << std::endl;
 	}
