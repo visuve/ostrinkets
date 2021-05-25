@@ -10,7 +10,7 @@ jobs:
     - name: Install tools
       run: |
         sudo apt update
-        sudo apt --yes install clang-12 cmake ninja-build libudev-dev
+        sudo apt --yes install clang-12 cmake libudev-dev
 
     - name: Build
       run: |
@@ -18,5 +18,5 @@ jobs:
         cd out
         export CC=/usr/bin/clang-12
         export CXX=/usr/bin/clang++-12
-        cmake -G Ninja ..
-        ninja
+        cmake ..
+        make
