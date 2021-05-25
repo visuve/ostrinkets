@@ -39,13 +39,6 @@ namespace
 
 		return T(distribution(engine));
 	}
-
-	template <typename T>
-	T since_epoch()
-	{
-		const auto now = std::chrono::system_clock::now();
-		return std::chrono::duration_cast<T>(now.time_since_epoch());
-	}
 }
 
 bool resource::flip_random_bit()
@@ -55,7 +48,7 @@ bool resource::flip_random_bit()
 
 	if (!random_source_byte.has_value())
 	{
-		std::cout << since_epoch<std::chrono::seconds>().count()
+		std::cout << std::chrono::system_clock::now()
 			<< " Failed to read @ " << offset << std::endl;
 		return false;
 	}
@@ -71,7 +64,7 @@ bool resource::flip_random_bit()
 
 	if (!write_byte_at(offset, shuffled_byte))
 	{
-		std::cout << since_epoch<std::chrono::seconds>().count()
+		std::cout << std::chrono::system_clock::now()
 			<< " Failed to write @ " << offset << std::endl;
 
 		return false;
@@ -82,11 +75,11 @@ bool resource::flip_random_bit()
 		return false;
 	}
 
-	std::cout << since_epoch<std::chrono::seconds>().count();
-	printf(" Flipped 0x%.2X -> 0x%.2X @ ",
+	std::cout << std::format("{} Flipped {:#02x} -> {:#02x} @ {}",
+		std::chrono::system_clock::now(),
 		random_source_byte_value,
-		shuffled_value);
-	std::cout << offset << std::endl;
+		shuffled_value,
+		offset) << std::endl;
 
 	return true;
 }
@@ -128,7 +121,7 @@ int main(int argc, char** argv)
 
 		const auto sleep_time = random_numeric_value<std::chrono::seconds>(1, 1000);
 
-		std::cout << since_epoch<std::chrono::seconds>().count()
+		std::cout << std::chrono::system_clock::now()
 			<< " Sleeping for " << sleep_time.count() << "s..." << std::endl;
 
 		std::this_thread::sleep_for(sleep_time);

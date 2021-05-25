@@ -17,9 +17,7 @@ void signal_handler(int)
 
 void report_changes()
 {
-	const auto now = std::chrono::system_clock::now();
-	const auto tt = std::chrono::system_clock::to_time_t(now);
-	std::cout << tt << " Changed..." << std::endl;
+	std::cout << std::chrono::system_clock::now() << " Changed..." << std::endl;
 }
 
 int main(int argc, char** argv)
