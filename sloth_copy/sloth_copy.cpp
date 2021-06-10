@@ -3,6 +3,7 @@
 #include <chrono>
 #include <csignal>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -31,11 +32,6 @@ namespace
 		return T(distribution(engine));
 	}
 
-	inline time_t timestamp()
-	{
-		return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-	}
-
 	std::streamsize read_random_number_of_bytes(std::ifstream& input, std::span<char> buffer)
 	{
 		const auto bytes_to_read =
@@ -50,7 +46,9 @@ namespace
 	{
 		const auto sleep_time = random_numeric_value<std::chrono::milliseconds>(1, 20);
 
-		std::cout << timestamp() << " sleeping for " << sleep_time.count() << "ms..." << std::endl;
+		std::cout << std::format("{} sleeping for {}",
+			std::chrono::system_clock::now(),
+			sleep_time) << std::endl;
 
 		std::this_thread::sleep_for(sleep_time);
 	}
@@ -67,7 +65,9 @@ namespace
 			throw std::ios_base::failure("Failed to flush output");
 		}
 
-		std::cout << timestamp() << " wrote " << buffer.size_bytes() << " bytes" << std::endl;
+		std::cout << std::format("{} wrote {} bytes",
+			std::chrono::system_clock::now(),
+			buffer.size_bytes()) << std::endl;
 	}
 
 	void sloth_copy(

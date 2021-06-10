@@ -90,17 +90,17 @@ void perus64_decode(std::istream& in, std::ostream& out)
 
 		if (bytesRead > 1)
 		{
-			out.put(index(quartet[0]) << 2 | index(quartet[1]) >> 4);
+			out.put(static_cast<char>(index(quartet[0]) << 2 | index(quartet[1]) >> 4));
 		}
 
 		if (bytesRead > 2 && quartet[2] != '=')
 		{
-			out.put((index(quartet[1]) & 0xF) << 4 | index(quartet[2]) >> 2);
+			out.put(static_cast<char>((index(quartet[1]) & 0xF) << 4 | index(quartet[2]) >> 2));
 		}
 
 		if (bytesRead > 3 && quartet[3] != '=')
 		{
-			out.put((index(quartet[2]) & 0x3) << 6 | index(quartet[3]));
+			out.put(static_cast<char>((index(quartet[2]) & 0x3) << 6 | index(quartet[3])));
 		}
 	}
 }
