@@ -31,6 +31,9 @@
 ### file_search
 - Search files for certain content
 
+### file_replace
+- Finds and replaces content in a file
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD

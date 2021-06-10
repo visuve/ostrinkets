@@ -11,10 +11,12 @@
 		<dir name="drive_info"/>
 		<dir name="entropy_calc"/>
 		<dir name="file_info"/>
+		<dir name="file_replace"/>
 		<dir name="file_watcher"/>
+		<dir name="file_watcher_simple"/>
+		<dir name="perus64"/>
 		<dir name="rand_file"/>
 		<dir name="sloth_copy"/>
-		<dir name="perus64"/>
 	</paths>
 	<libraries>
 		<library>posix</library>

@@ -27,4 +27,5 @@ add_subdirectory("file_watcher_simple")
 add_subdirectory("file_watcher")
 add_subdirectory("perus64")
 add_subdirectory("file_search")
+add_subdirectory("file_replace")
 
