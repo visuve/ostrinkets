@@ -19,4 +19,4 @@ jobs:
 
     - name: Static analysis
       run: |
-        cppcheck --project=fstrinkets.cppcheck
+        cppcheck --project=ostrinkets.cppcheck

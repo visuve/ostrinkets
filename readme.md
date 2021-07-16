@@ -1,4 +1,6 @@
-# fstrinkets - file system trinkets
+# ostrinkets - operating / file system trinkets
+
+- Small trinkets for fun & learning
 
 ### rand_file
 - Opens a random file in a directory using default file association
