@@ -28,4 +28,4 @@ add_subdirectory("file_watcher")
 add_subdirectory("perus64")
 add_subdirectory("file_search")
 add_subdirectory("file_replace")
-
+add_subdirectory("mem_search")

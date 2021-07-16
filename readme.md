@@ -34,6 +34,10 @@
 ### file_replace
 - Finds and replaces content in a file
 
+### mem_search
+- Finds a value in process memory
+	- NOTE: only works on Linux at the moment
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD
