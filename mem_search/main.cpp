@@ -80,6 +80,39 @@ namespace
 		throw std::runtime_error("Process not found!");
 	}
 
+	class process_memory_descriptor
+	{
+	public:
+		process_memory_descriptor(const std::filesystem::path& file, pid_t pid) :
+			_process_handle(open(file.c_str(), O_RDONLY)),
+			_pid(pid)
+		{
+			if (_process_handle != -1)
+			{
+				ptrace(PT_ATTACH, pid, nullptr, 0);
+				waitpid(pid, nullptr, 0);
+			}
+		}
+
+		~process_memory_descriptor()
+		{
+			if (_process_handle != -1)
+			{
+				ptrace(PT_DETACH, _pid, nullptr, 0);
+				close(_process_handle);
+			}
+		}
+
+		operator int() const
+		{
+			return _process_handle;
+		}
+
+	private:
+		int _process_handle = -1;
+		pid_t _pid = -1;
+	};
+
 	uint64_t find_value_in_process(
 		std::string_view process_name,
 		std::string_view value_to_search)
@@ -89,9 +122,7 @@ namespace
 
 		std::filesystem::path process_memory_path = "/proc/" + std::to_string(pid) + "/mem";
 
-		int mem_fd = open(process_memory_path.c_str(), O_RDONLY);
-		ptrace(PT_ATTACH, pid, nullptr, 0);
-		waitpid(pid, nullptr, 0);
+		process_memory_descriptor pmd(process_memory_path, pid);
 
 		for (const auto& region : process_memory_map)
 		{
@@ -101,7 +132,7 @@ namespace
 			}
 
 			std::string buffer(region.size(), '\0');
-			pread(mem_fd, buffer.data(), region.size(), region.address_start);
+			pread(pmd, buffer.data(), region.size(), region.address_start);
 
 			uint64_t position = buffer.find(value_to_search);
 
@@ -111,7 +142,6 @@ namespace
 			}
 		}
 
-		ptrace(PT_DETACH, pid, nullptr, 0);
 		return 0;
 	}
 }
