@@ -134,13 +134,15 @@ int main(int argc, char* argv[])
 		if (address != 0)
 		{
 			std::cout << value_to_search << " found at: " << std::hex << address << std::endl;
+			return EXIT_SUCCESS;
 		}
+
+		std::cout << value_to_search << " not found." << std::endl;
 	}
 	catch (const std::exception& e)
 	{
 		std::cout << "An exception occurred: " << e.what() << std::endl;
-		return EXIT_FAILURE;
 	}
 
-	return EXIT_SUCCESS;
+	return EXIT_FAILURE;
 }
