@@ -83,15 +83,9 @@ namespace
 	class process_memory_descriptor
 	{
 	public:
-		process_memory_descriptor(const std::filesystem::path& file, pid_t pid) :
-			_process_handle(open(file.c_str(), O_RDONLY)),
-			_pid(pid)
+		process_memory_descriptor(pid_t pid) :
+			process_memory_descriptor("/proc/" + std::to_string(pid) + "/mem", pid)
 		{
-			if (_process_handle != -1)
-			{
-				ptrace(PT_ATTACH, pid, nullptr, 0);
-				waitpid(pid, nullptr, 0);
-			}
 		}
 
 		~process_memory_descriptor()
@@ -109,6 +103,17 @@ namespace
 		}
 
 	private:
+		process_memory_descriptor(const std::filesystem::path& file, pid_t pid) :
+			_process_handle(open(file.c_str(), O_RDONLY)),
+			_pid(pid)
+		{
+			if (_process_handle != -1)
+			{
+				ptrace(PT_ATTACH, pid, nullptr, 0);
+				waitpid(pid, nullptr, 0);
+			}
+		}
+
 		int _process_handle = -1;
 		pid_t _pid = -1;
 	};
@@ -120,9 +125,7 @@ namespace
 		const pid_t pid = find_pid_by_process_name(process_name);
 		const auto process_memory_map = parse_process_memory_map(pid);
 
-		std::filesystem::path process_memory_path = "/proc/" + std::to_string(pid) + "/mem";
-
-		process_memory_descriptor pmd(process_memory_path, pid);
+		process_memory_descriptor pmd(pid);
 
 		for (const auto& region : process_memory_map)
 		{
