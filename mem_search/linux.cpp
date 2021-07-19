@@ -125,6 +125,7 @@ namespace mem_search
 		const pid_t pid = find_pid_by_process_name(process_name);
 		const auto process_memory_map = parse_process_memory_map(pid);
 
+		std::string buffer;
 		process_memory_descriptor pmd(pid);
 
 		for (const auto& region : process_memory_map)
@@ -134,8 +135,15 @@ namespace mem_search
 				continue;
 			}
 
-			std::string buffer(region.size(), '\0');
-			pread(pmd, buffer.data(), region.size(), region.address_start);
+			buffer.resize(region.size());
+			ssize_t bytes_read = pread(pmd, buffer.data(), region.size(), region.address_start);
+
+			if (bytes_read <=0)
+			{
+				continue;
+			}
+
+			buffer.resize(bytes_read);
 
 			uint64_t position = buffer.find(value_to_search);
 
