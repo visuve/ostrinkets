@@ -39,6 +39,9 @@
 ### mem_search
 - Finds a value in process memory
 
+### lorem_ipsum
+- A Linux kernel module (character device) which outputs "Lorem Ipsum" data
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD

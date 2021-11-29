@@ -1,0 +1,1 @@
+obj-m := lorem_ipsum.o

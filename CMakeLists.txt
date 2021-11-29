@@ -4,14 +4,11 @@ project("ostrinkets")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 11)
+set(C_STANDARD_REQUIRED ON)
 
 if(MSVC)
 	add_compile_options(/W4 /WX /MP)
-	#add_compile_options(
-	#	$<$<CONFIG:>:/MT>
-	#	$<$<CONFIG:Debug>:/MTd>
-	#	$<$<CONFIG:Release>:/MT>
-	#)
 else()
 	add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
@@ -29,3 +26,4 @@ add_subdirectory("perus64")
 add_subdirectory("file_search")
 add_subdirectory("file_replace")
 add_subdirectory("mem_search")
+add_subdirectory("lorem_ipsum")
