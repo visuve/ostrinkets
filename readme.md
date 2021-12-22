@@ -41,6 +41,10 @@
 
 ### lorem_ipsum
 - A Linux kernel module (character device) which outputs "Lorem Ipsum" data
+- Not quite finished yet
+
+### process_exit
+- Waits for process to exit and prints it's exit code
 
 ## Prerequisites
 
