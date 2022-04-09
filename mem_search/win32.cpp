@@ -57,6 +57,8 @@ namespace mem_search
 		MEMORY_BASIC_INFORMATION memory_info = {};
 		std::string buffer;
 
+		uint64_t result = 0;
+
 		for (void* address = system_info.lpMinimumApplicationAddress;
 			address < system_info.lpMaximumApplicationAddress;
 			address = reinterpret_cast<void*>(reinterpret_cast<SIZE_T>(address) + memory_info.RegionSize))
@@ -93,11 +95,12 @@ namespace mem_search
 
 			if (position != std::string::npos)
 			{
-				return reinterpret_cast<uint64_t>(address) + position;
+				result = reinterpret_cast<uint64_t>(address) + position;
+				break;
 			}
 		}
 
 		CloseHandle(process_handle);
-		return 0;
+		return result;
 	}
 }
