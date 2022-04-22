@@ -11,7 +11,7 @@ namespace
 	float entropy(std::istream& input_stream)
 	{
 		std::array<char, 0x1000> buffer = {};
-		std::array<float, 0xFF> frequencies = {};
+		std::array<float, 0x100> frequencies = {};
 		float total_bytes_read = 0.0;
 
 		while (input_stream)
@@ -33,6 +33,11 @@ namespace
 
 		for (float value : frequencies)
 		{
+			if (value <= 0)
+			{
+				continue;
+			}
+
 			float frequency = value / total_bytes_read;
 			entropy -= frequency * std::log2(frequency);
 		}
