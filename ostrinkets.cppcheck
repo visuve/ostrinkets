@@ -7,11 +7,13 @@
 	<max-ctu-depth>10</max-ctu-depth>
 	<paths>
 		<dir name="bit_flipper"/>
+		<dir name="byte_printer"/>
 		<dir name="dir_clean"/>
 		<dir name="drive_info"/>
 		<dir name="entropy_calc"/>
 		<dir name="file_info"/>
 		<dir name="file_replace"/>
+		<dir name="file_search"/>
 		<dir name="file_watcher"/>
 		<dir name="file_watcher_simple"/>
 		<dir name="mem_search"/>

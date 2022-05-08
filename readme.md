@@ -46,6 +46,9 @@
 ### process_exit
 - Waits for process to exit and prints it's exit code
 
+### byte_printer
+- Prints out a file in hex, byte by byte
+
 ## Prerequisites
 
 - Windows, Linux or FreeBSD
