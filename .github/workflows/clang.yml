@@ -1,22 +1,22 @@
-name: Ubuntu Clang 11
+name: Ubuntu Clang 14
 
 on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2
     - name: Install tools
       run: |
         sudo apt update
-        sudo apt --yes install clang-12 cmake libudev-dev
+        sudo apt --yes install clang-14 cmake libudev-dev
 
     - name: Build
       run: |
         mkdir out
         cd out
-        export CC=/usr/bin/clang-12
-        export CXX=/usr/bin/clang++-12
+        export CC=/usr/bin/clang-14
+        export CXX=/usr/bin/clang++-14
         cmake ..
         make
