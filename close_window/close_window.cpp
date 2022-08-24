@@ -1,71 +1,103 @@
 #include <iostream>
+#include <stdexcept>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-bool find_and_close(Display* display, Window rootwin, int pid)
+class xdisplay
 {
-	Window parent;
-	Window* children = nullptr;
-	uint32_t no_of_children = 0;
-
-	Status status = XQueryTree(display, rootwin, &rootwin, &parent, &children, &no_of_children);
-
-	if (!status || !no_of_children)
+public:
+	xdisplay() :
+		_display(XOpenDisplay(nullptr))
 	{
-		puts("XQueryTree failed!");
-		return false;
+		if (!_display)
+		{
+			throw std::runtime_error("XQueryTree failed!");
+		}
+
+		_root = XDefaultRootWindow(_display);
 	}
 
-	for (uint32_t i = 0; i < no_of_children; i++)
+	~xdisplay()
 	{
-		Window child = children[i];
+		if (_display)
+		{
+			XCloseDisplay(_display);
+		}
+	}
 
-		XTextProperty text_data;
-		Atom atom = XInternAtom(display, "_NET_WM_PID", true);
-		status = XGetTextProperty(display, child, &text_data, atom);
+	void close_by_pid(int pid)
+	{
+		Window parent;
+		Window* children = nullptr;
+		uint32_t child_count = 0;
+
+		Status status = XQueryTree(_display, _root, &_root, &parent, &children, &child_count);
 
 		if (!status)
 		{
-			puts("XGetTextProperty failed!");
-			continue;
+			throw std::runtime_error("XQueryTree failed!");
 		}
 
-		if (!text_data.nitems)
+		for (uint32_t i = 0; i < child_count; i++)
 		{
-			continue;
+			Window child = children[i];
+
+			XTextProperty text;
+			Atom atom = XInternAtom(_display, "_NET_WM_PID", true);
+			status = XGetTextProperty(_display, child, &text, atom);
+
+			if (!status)
+			{
+				continue;
+			}
+
+			if (!text.nitems)
+			{
+				continue;
+			}
+
+			int window_pid = text.value[1] * 256;
+			window_pid += text.value[0];
+
+			if (window_pid != pid)
+			{
+				continue;
+			}
+
+			close_window(child);
+			return;
 		}
 
-		int window_pid = text_data.value[1] * 256;
-		window_pid += text_data.value[0];
+		std::cerr << "No window found with PID " << pid << std::endl;
+	}
 
-		if (window_pid != pid)
-		{
-			continue;
-		}
+	void close_window(Window id)
+	{
+		constexpr long mask = SubstructureRedirectMask | SubstructureNotifyMask;
 
-		XEvent e;
-		e.xclient.type = ClientMessage;
-		e.xclient.window = child;
-		e.xclient.message_type = XInternAtom(display, "WM_PROTOCOLS", true);
+		XEvent e = {};
 		e.xclient.format = 32;
-		e.xclient.data.l[0] = XInternAtom(display, "WM_DELETE_WINDOW", false);
-		e.xclient.data.l[1] = CurrentTime;
+		e.xclient.message_type = XInternAtom(_display, "_NET_CLOSE_WINDOW", false);
+		e.xclient.send_event = true;
+		e.xclient.type = ClientMessage;
+		e.xclient.window = id;
 
-		status = XSendEvent(display, child, false, NoEventMask, &e);
+		std::cout << "Closing window: " << std::hex << id << std::endl;
 
-		if (!status)
+		if (!XSendEvent(_display, _root, false, mask, &e))
 		{
-			puts("XSendEvent failed!");
-			break;
+			throw std::runtime_error("XSendEvent failed!");
 		}
 
-		return true;
+		XSync(_display, false);
 	}
 
-	return false;
-}
+private:
+	Display* _display = nullptr;
+	Window _root;
+};
 
 int main(int argc, char** argv)
 {
@@ -75,32 +107,17 @@ int main(int argc, char** argv)
 		return EINVAL;
 	}
 
-	int pid = std::stoi(argv[1]);
-
-	Display* display = XOpenDisplay(nullptr);
-
-	if (!display)
+	try
 	{
-		puts("No display!");
-		return -1;
+		int pid = std::stoi(argv[1]);
+
+		xdisplay().close_by_pid(pid);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "An exception occurred: " << e.what() << std::endl;
 	}
 
-	Window root = XDefaultRootWindow(display);
-
-	if (!root)
-	{
-		puts("No root window!");
-		return -1;
-	}
-
-	if (find_and_close(display, root, pid))
-	{
-		puts("Closed!");
-	}
-	else
-	{
-		puts("Did not close :(");
-	}
-
+	std::cout << "KTHXBYE!" << std::endl;
 	return 0;
 }
