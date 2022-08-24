@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -17,6 +18,18 @@ public:
 		}
 
 		_root = XDefaultRootWindow(_display);
+
+		_clients = client_list("_NET_CLIENT_LIST");
+
+		if (_clients.empty() || !_clients.data())
+		{
+			_clients = client_list("_WIN_CLIENT_LIST");
+		}
+
+		if (_clients.empty() || !_clients.data())
+		{
+			throw std::runtime_error("Failed to list clients!");
+		}
 	}
 
 	~xdisplay()
@@ -29,48 +42,92 @@ public:
 
 	void close_by_pid(int pid)
 	{
-		Window parent;
-		Window* children = nullptr;
-		uint32_t child_count = 0;
-
-		Status status = XQueryTree(_display, _root, &_root, &parent, &children, &child_count);
-
-		if (!status)
+		for (Window window : _clients)
 		{
-			throw std::runtime_error("XQueryTree failed!");
+			if (window_pid(window) == pid)
+			{
+				close_window(window);
+				return;
+			}
+		}
+	}
+
+private:
+	std::vector<Window> client_list(std::string_view property_name)
+	{
+		Atom property = XInternAtom(_display, property_name.data(), false);
+		Atom type;
+		int32_t format;
+		unsigned long count;
+		unsigned long remaining;
+		uint8_t* data;
+
+		Status status = XGetWindowProperty(
+			_display,
+			_root,
+			property,
+			0,
+			1024,
+			false,
+			XA_WINDOW,
+			&type,
+			&format,
+			&count,
+			&remaining,
+			&data);
+
+		std::vector<Window> result;
+
+		if (status == Success)
+		{
+			auto cast = reinterpret_cast<Window*>(data);
+			result = { cast, cast + count };
 		}
 
-		for (uint32_t i = 0; i < child_count; i++)
+		if (data)
 		{
-			Window child = children[i];
-
-			XTextProperty text;
-			Atom atom = XInternAtom(_display, "_NET_WM_PID", true);
-			status = XGetTextProperty(_display, child, &text, atom);
-
-			if (!status)
-			{
-				continue;
-			}
-
-			if (!text.nitems)
-			{
-				continue;
-			}
-
-			int window_pid = text.value[1] * 256;
-			window_pid += text.value[0];
-
-			if (window_pid != pid)
-			{
-				continue;
-			}
-
-			close_window(child);
-			return;
+			XFree(data);
 		}
 
-		std::cerr << "No window found with PID " << pid << std::endl;
+		return result;
+	}
+
+	int window_pid(Window window)
+	{
+		Atom property = XInternAtom(_display, "_NET_WM_PID", true);
+		Atom type;
+		int32_t format;
+		unsigned long count;
+		unsigned long remaining;
+		uint8_t* data;
+
+		Status status = XGetWindowProperty(
+			_display,
+			window,
+			property,
+			0,
+			1024,
+			false,
+			XA_CARDINAL,
+			&type,
+			&format,
+			&count,
+			&remaining,
+			&data);
+
+		int pid = -1;
+
+		if (status == Success && count > 0)
+		{
+			pid = *reinterpret_cast<int*>(data);
+		}
+
+		if (data)
+		{
+			XFree(data);
+		}
+
+		return pid;
 	}
 
 	void close_window(Window id)
@@ -94,9 +151,9 @@ public:
 		XSync(_display, false);
 	}
 
-private:
 	Display* _display = nullptr;
 	Window _root;
+	std::vector<Window> _clients;
 };
 
 int main(int argc, char** argv)
