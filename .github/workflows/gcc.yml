@@ -1,4 +1,4 @@
-name: Ubuntu G++12
+name: Ubuntu g++12
 
 on: [push, pull_request]
 

@@ -1,0 +1,17 @@
+name: MSVC build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: microsoft/setup-msbuild@v1.0.3
+
+    - name: Build x64
+      run: |
+        mkdir x64 && cd x64
+        cmake -G "Visual Studio 17 2022" -A x64 ..
+        msbuild ostrinkets.sln /p:Platform=x64 /p:Configuration=Release /m
+
