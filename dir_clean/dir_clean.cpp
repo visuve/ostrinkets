@@ -3,7 +3,6 @@
 #include <csignal>
 #include <cstdio>
 #include <filesystem>
-#include <format>
 #include <iostream>
 #include <set>
 #include <vector>

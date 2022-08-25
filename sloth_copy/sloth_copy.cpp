@@ -3,13 +3,16 @@
 #include <chrono>
 #include <csignal>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <iostream>
 #include <random>
 #include <span>
 #include <string>
 #include <thread>
+
+#ifdef __cpp_lib_format 
+#include <format>
+#endif
 
 namespace
 {
@@ -46,9 +49,14 @@ namespace
 	{
 		const auto sleep_time = random_numeric_value<std::chrono::milliseconds>(1, 20);
 
+#ifdef __cpp_lib_format 
 		std::cout << std::format("{} sleeping for {}",
 			std::chrono::system_clock::now(),
 			sleep_time) << std::endl;
+#else
+		std::cout << std::chrono::system_clock::now().time_since_epoch().count()
+			<< " sleeping for " << sleep_time.count() << std::endl;
+#endif
 
 		std::this_thread::sleep_for(sleep_time);
 	}
@@ -65,9 +73,14 @@ namespace
 			throw std::ios_base::failure("Failed to flush output");
 		}
 
+#ifdef __cpp_lib_format
 		std::cout << std::format("{} wrote {} bytes",
 			std::chrono::system_clock::now(),
 			buffer.size_bytes()) << std::endl;
+#else
+		std::cout << std::chrono::system_clock::now().time_since_epoch().count()
+			<< " wrote " << buffer.size_bytes() << " bytes" << std::endl;
+#endif
 	}
 
 	void sloth_copy(

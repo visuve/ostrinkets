@@ -19,6 +19,10 @@
 #define last_error errno
 #endif
 
+#ifdef __cpp_lib_format
+#include <format>
+#endif
+
 namespace
 {
 	std::atomic<int> _signal;
@@ -48,8 +52,13 @@ bool resource::flip_random_bit()
 
 	if (!random_source_byte.has_value())
 	{
+#ifdef __cpp_lib_format
 		std::cout << std::chrono::system_clock::now()
+#else
+		std::cout << std::chrono::system_clock::now().time_since_epoch().count()
+#endif
 			<< " Failed to read @ " << offset << std::endl;
+
 		return false;
 	}
 
@@ -64,7 +73,11 @@ bool resource::flip_random_bit()
 
 	if (!write_byte_at(offset, shuffled_byte))
 	{
+#ifdef __cpp_lib_format
 		std::cout << std::chrono::system_clock::now()
+#else
+		std::cout << std::chrono::system_clock::now().time_since_epoch().count()
+#endif
 			<< " Failed to write @ " << offset << std::endl;
 
 		return false;
@@ -75,11 +88,17 @@ bool resource::flip_random_bit()
 		return false;
 	}
 
+#ifdef __cpp_lib_format
 	std::cout << std::format("{} Flipped {:#02x} -> {:#02x} @ {}",
 		std::chrono::system_clock::now(),
 		random_source_byte_value,
 		shuffled_value,
 		offset) << std::endl;
+#else
+	std::cout << std::chrono::system_clock::now().time_since_epoch().count()
+		<< " Flipped " << std::hex << random_source_byte_value << " -> " << shuffled_value
+		<< " @ " << offset;
+#endif
 
 	return true;
 }
@@ -121,7 +140,11 @@ int main(int argc, char** argv)
 
 		const auto sleep_time = random_numeric_value<std::chrono::seconds>(1, 1000);
 
+#ifdef __cpp_lib_format
 		std::cout << std::chrono::system_clock::now()
+#else
+		std::cout << std::chrono::system_clock::now().time_since_epoch().count()
+#endif
 			<< " Sleeping for " << sleep_time.count() << "s..." << std::endl;
 
 		std::this_thread::sleep_for(sleep_time);

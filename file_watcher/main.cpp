@@ -17,7 +17,7 @@ void signal_handler(int)
 
 void report_changes()
 {
-	std::cout << std::chrono::system_clock::now() << " Changed..." << std::endl;
+	std::cout << std::chrono::system_clock::now().time_since_epoch().count() << " Changed..." << std::endl;
 }
 
 int main(int argc, char** argv)
