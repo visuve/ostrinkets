@@ -9,22 +9,31 @@
 using argument_vector = std::vector<std::wstring>;
 #else
 #include <sys/types.h>
-using argument_vector = std::vector<std::string>;
+
 #endif
 
 class process
 {
+	using value_type = std::filesystem::path::value_type;
+	using string_type = std::filesystem::path::string_type;
+	using argument_vector = std::vector<string_type>;
+
 public:
-	process(std::filesystem::path&& executable, argument_vector&& arguments);
+	process(
+		std::filesystem::path&& executable,
+		argument_vector&& arguments,
+		value_type** environment);
+
 	virtual ~process();
 
-	void start();
+	int start();
 	void wait();
 	int exit_code() const;
 
 private:
 	std::filesystem::path _executable;
 	argument_vector _arguments;
+	value_type** _environment;
 
 #ifdef _WIN32
 	std::unique_ptr<PROCESS_INFORMATION> _process_info;

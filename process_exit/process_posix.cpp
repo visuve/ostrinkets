@@ -1,35 +1,50 @@
 #include "process.hpp"
+#include <algorithm>
+#include <ranges>
 #include <spawn.h>
 #include <sys/wait.h>
 #include <system_error>
 
-process::process(std::filesystem::path&& executable, argument_vector&& arguments) :
+process::process(
+	std::filesystem::path&& executable,
+	argument_vector&& arguments,
+	value_type** environment) :
 	_executable(executable),
-	_arguments({ executable })
+	_arguments({ executable }),
+	_environment(environment)
 {
-	std::move(arguments.begin(), arguments.end(), std::back_inserter(_arguments));
+	std::ranges::move(arguments, std::back_inserter(_arguments));
 }
 
 process::~process()
 {
 }
 
-void process::start()
+int process::start()
 {
-	char** arguments = new char*[_arguments.size()];
+	std::vector<char*> arguments(_arguments.size() + 1, nullptr);
 
-	for (size_t i = 0; i < _arguments.size(); ++i)
-	{
-		arguments[i] = _arguments[i].data();
-	}
+	std::transform(
+		_arguments.begin(),
+		_arguments.end(),
+		arguments.begin(),
+		[](std::string& s)->char*
+		{
+			return s.data();
+		});
 
-	if (posix_spawn(&_pid, _executable.c_str(), nullptr, nullptr, arguments, nullptr) != 0)
+	if (posix_spawn(
+		&_pid,
+		_executable.c_str(),
+		nullptr,
+		nullptr,
+		arguments.data(),
+		_environment) != 0)
 	{
-		delete[] arguments;
 		throw std::runtime_error("Could not start process");
 	}
 
-	delete[] arguments;
+	return _pid;
 }
 
 void process::wait()

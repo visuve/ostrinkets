@@ -12,9 +12,10 @@ namespace
 	}
 }
 
-process::process(std::filesystem::path&& executable, argument_vector&& arguments) :
+process::process(std::filesystem::path&& executable, argument_vector&& arguments, value_type** environment) :
 	_executable(executable),
-	_arguments({ executable })
+	_arguments(arguments),
+	_environment(environment)
 {
 	std::move(arguments.begin(), arguments.end(), std::back_inserter(_arguments));
 }
@@ -28,7 +29,7 @@ process::~process()
 	}
 }
 
-void process::start()
+int process::start()
 {
 	STARTUPINFOW startup_info = {};
 	startup_info.cb = sizeof(startup_info);
@@ -43,8 +44,8 @@ void process::start()
 		nullptr,
 		nullptr,
 		FALSE,
-		0,
-		nullptr,
+		CREATE_UNICODE_ENVIRONMENT,
+		_environment,
 		nullptr,
 		&startup_info,
 		_process_info.get())
@@ -53,6 +54,8 @@ void process::start()
 		_process_info = nullptr;
 		throw std::runtime_error("Could not start process");
 	}
+
+	return static_cast<int>(_process_info->dwProcessId);
 }
 
 void process::wait()

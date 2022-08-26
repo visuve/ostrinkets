@@ -1,11 +1,10 @@
 #include "process.hpp"
-#include <algorithm>
 #include <iostream>
 
 #ifdef _WIN32
-int wmain(int argc, wchar_t** argv)
+int wmain(int argc, wchar_t** argv, wchar_t** envp)
 #else
-int main(int argc, char** argv)
+int main(int argc, char** argv, char** envp)
 #endif
 {
 	if (argc < 3)
@@ -16,7 +15,7 @@ int main(int argc, char** argv)
 
 	try
 	{
-		process p(argv[1], { argv + 2, argv + argc});
+		process p(argv[1], { argv + 2, argv + argc}, envp);
 
 		p.start();
 		p.wait();
