@@ -15,4 +15,4 @@ jobs:
 
     - name: Static analysis
       run: |
-        cppcheck --project=ostrinkets.cppcheck
+        cppcheck --project=ostrinkets.cppcheck --error-exitcode=1 --enable=warning,style
