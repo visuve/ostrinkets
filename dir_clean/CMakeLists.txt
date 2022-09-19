@@ -1,11 +1,5 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_executable(DirClean "dir_clean.cpp")
-endif()
-
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	add_executable(dir_clean "dir_clean.cpp")
-endif()
-
-if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+else()
 	add_executable(dir_clean "dir_clean.cpp")
 endif()

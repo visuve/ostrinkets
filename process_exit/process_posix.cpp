@@ -13,7 +13,11 @@ process::process(
 	_arguments({ executable }),
 	_environment(environment)
 {
+#ifdef __APPLE__
+	std::copy(arguments.cbegin(), arguments.cend(), std::back_inserter(_arguments));
+#else
 	std::ranges::move(arguments, std::back_inserter(_arguments));
+#endif
 }
 
 process::~process()

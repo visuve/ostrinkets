@@ -109,7 +109,7 @@ namespace mem_search
 		{
 			if (_process_handle != -1)
 			{
-				ptrace(PT_ATTACH, pid, nullptr, 0);
+				ptrace(PT_ATTACHEXC, pid, nullptr, 0);
 				waitpid(pid, nullptr, 0);
 			}
 		}

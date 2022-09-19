@@ -1,4 +1,4 @@
-if(MSVC)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_executable(Perus64Encode "perus64_encode.cpp")
 	add_executable(Perus64Decode "perus64_decode.cpp")
 else()
