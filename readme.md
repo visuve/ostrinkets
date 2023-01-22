@@ -49,7 +49,10 @@
 ### byte_printer
 - Prints out a file in hex, byte by byte
 
+### record_sound
+- A simple sound recorder for Windows
+
 ## Prerequisites
 
-- Windows, Linux or FreeBSD
-- GCC, Clang or Visual Studio 2019
+- Windows, Linux, FreeBSD or macOS
+- GCC, Clang or Visual Studio 2022
