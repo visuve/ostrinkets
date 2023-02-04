@@ -115,9 +115,13 @@ int record_sound::record(int argc, char** argv)
 			return ERROR_BAD_ARGUMENTS;
 		}
 
+		const std::string_view alias(argv[1]);
+
 		const std::filesystem::path recording_path =
 			std::filesystem::path(argv[0]).parent_path() /
-			std::format("{:%Y%m%d_%H%M%OS}.wav", std::chrono::system_clock::now());
+			std::format("{}-{:%Y%m%d_%H%M%OS}.wav",
+				alias,
+				std::chrono::system_clock::now());
 
 		const std::string quality = std::format(
 			"bitspersample {} channels {} alignment {} samplespersec {} bytespersec {}",
@@ -128,23 +132,23 @@ int record_sound::record(int argc, char** argv)
 			bytes_per_second);
 
 		windows_multimedia winmm;
-		winmm.send_string("open new type waveaudio alias derp");
-		winmm.send_string("set derp " + quality);
+		winmm.send_string(std::format("open new type waveaudio alias {}", alias));
+		winmm.send_string(std::format("set {} {}", alias, quality));
 
 		pause("Press enter to start recording...");
 
 		// To avoid recording the enter key press echo :D
 		std::this_thread::sleep_for(std::chrono::milliseconds(250));
-		winmm.send_string("record derp");
+		winmm.send_string(std::format("record {}", alias));
 
 		pause("Recording. Press enter to stop.");
 
-		winmm.send_string("stop derp");
-		winmm.send_string("save derp " + recording_path.string());
-		winmm.send_string("delete derp");
-		winmm.send_string("close derp");
+		winmm.send_string(std::format("stop {}", alias));
+		winmm.send_string(std::format("save {} {}", alias, recording_path.string()));
+		winmm.send_string(std::format("delete {}", alias));
+		winmm.send_string(std::format("close {}", alias));
 
-		std::cout << "Saved: " << recording_path << std::endl;
+		std::cout << "Saved: " << recording_path.string() << std::endl;
 
 	}
 	catch (const std::system_error& sys_error)
