@@ -1,5 +1,5 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_executable(MemSearch "main.cpp" "mem_search.hpp" "win32.cpp")
 else()
-	add_executable(mem_search "main.cpp" "mem_search.hpp" "linux.cpp")
+	add_executable(mem_search "main.cpp" "mem_search.hpp" "posix.cpp")
 endif()

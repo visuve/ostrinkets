@@ -109,7 +109,11 @@ namespace mem_search
 		{
 			if (_process_handle != -1)
 			{
+#ifdef PT_ATTACHEXC
 				ptrace(PT_ATTACHEXC, pid, nullptr, 0);
+#else
+				ptrace(PT_ATTACH, pid, nullptr, 0);
+#endif
 				waitpid(pid, nullptr, 0);
 			}
 		}
