@@ -1,5 +1,5 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-	add_executable(FileReplace "main.cpp")
+	add_executable(FileReplace "file_replace.cpp")
 else()
-	add_executable(file_replace "main.cpp")
+	add_executable(file_replace "file_replace.cpp")
 endif()

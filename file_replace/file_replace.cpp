@@ -1,5 +1,4 @@
-﻿#include <algorithm>
-#include <array>
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -7,7 +6,36 @@
 #include <regex>
 #include <string_view>
 
-constexpr size_t buffer_size = 0x1000; // 4kib
+// TODO: this will fail if the searched item is between two buffer windows
+
+void replace(
+	std::ifstream& input_stream,
+	std::ofstream& output_stream,
+	const std::function<void(std::string&)>& replace_function)
+{
+	std::string buffer(0x1000, '\0'); // 4kib
+
+	do
+	{
+		input_stream.read(buffer.data(), buffer.size());
+
+		const std::streamsize bytes_read = input_stream.gcount();
+
+		if (bytes_read <= 0)
+		{
+			break;
+		}
+
+		if (static_cast<size_t>(bytes_read) < buffer.size())
+		{
+			buffer.resize(static_cast<size_t>(bytes_read));
+		}
+
+		replace_function(buffer);
+
+		output_stream << buffer;
+	} while (input_stream);
+}
 
 void replace(
 		const std::filesystem::path& file_path,
@@ -15,7 +43,6 @@ void replace(
 {
 	try
 	{
-		std::array<char, buffer_size> buffer = {};
 		std::filesystem::path tmp_file_path(file_path.string() + ".tmp");
 
 		std::ifstream input_stream(file_path);
@@ -24,25 +51,7 @@ void replace(
 		input_stream.exceptions(std::ios::badbit);
 		output_stream.exceptions(std::istream::failbit | std::istream::badbit);
 
-		std::string chunk;
-
-		do
-		{
-			input_stream.read(buffer.data(), buffer_size);
-
-			const std::streamsize bytes_read = input_stream.gcount();
-
-			if (bytes_read <= 0)
-			{
-				break;
-			}
-
-			chunk.assign(buffer.data(), static_cast<size_t>(bytes_read));
-
-			replace_function(chunk);
-
-			output_stream.write(chunk.c_str(), chunk.size());
-		} while (input_stream);
+		replace(input_stream, output_stream, replace_function);
 
 		input_stream.close();
 		output_stream.close();
@@ -51,7 +60,6 @@ void replace(
 		{
 			std::filesystem::rename(tmp_file_path, file_path);
 		}
-
 	}
 	catch (const std::exception& e)
 	{
