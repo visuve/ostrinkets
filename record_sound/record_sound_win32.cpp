@@ -106,12 +106,18 @@ namespace record_sound
 	constexpr int32_t bytes_per_second = alignment * samples_per_second;
 }
 
+void print_usage(char* exe)
+{
+	std::cout << exe << " <filename>";
+}
+
 int record_sound::record(int argc, char** argv)
 {
 	try
 	{
 		if (argc <= 1)
 		{
+			print_usage(argv[0]);
 			return ERROR_BAD_ARGUMENTS;
 		}
 
