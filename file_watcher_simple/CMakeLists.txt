@@ -1,5 +1,5 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-	add_executable(FileWatcherSimple "main.cpp" )
+	add_executable(FileWatcherSimple "file_watcher_simple.cpp" )
 else()
-	add_executable(file_watcher_simple "main.cpp")
+	add_executable(file_watcher_simple "file_watcher_simple.cpp")
 endif()

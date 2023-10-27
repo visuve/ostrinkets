@@ -22,10 +22,10 @@ enum class change_type : uint8_t
 	removed = 'r'
 };
 
-class file_watcher
+class file_poller
 {
 public:
-	file_watcher(const std::filesystem::path& path, std::chrono::seconds delay) :
+	file_poller(const std::filesystem::path& path, std::chrono::seconds delay) :
 		_path(path),
 		_delay(delay)
 	{
@@ -114,8 +114,8 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	file_watcher fw(argv[1], std::chrono::seconds(10));
-	fw.start(report_changes);
+	file_poller fp(argv[1], std::chrono::seconds(10));
+	fp.start(report_changes);
 
 	return 0;
 }
