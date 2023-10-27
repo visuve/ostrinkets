@@ -57,7 +57,7 @@ namespace
 		return std::none_of(unwanted.cbegin(), unwanted.cend(), equal_filename);
 	}
 
-	uintmax_t remove_entry(const fs::directory_entry& entry)
+	size_t remove_entry(const fs::directory_entry& entry)
 	{
 		try
 		{
@@ -89,7 +89,7 @@ namespace
 	void clean(const fs::path& path, const std::vector<fs::path>& to_remove)
 	{
 		auto iter = fs::recursive_directory_iterator(path);
-		uintmax_t removed_total = 0;
+		size_t removed_total = 0;
 
 		for (auto& entry : iter)
 		{
@@ -123,7 +123,7 @@ namespace
 				continue;
 			}
 
-			const uintmax_t removed = remove_entry(entry);
+			const size_t removed = remove_entry(entry);
 
 			if (!removed)
 			{

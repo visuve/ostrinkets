@@ -114,7 +114,7 @@ bool resource::is_valid() const
 
 bool resource::is_empty() const
 {
-	return _size <= 0;
+	return _size == 0;
 }
 
 std::optional<std::byte> resource::read_byte_at(uint64_t offset)

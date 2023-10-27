@@ -66,7 +66,6 @@ namespace fstrinkets
 				throw std::system_error(errno, std::system_category(), "udev_list_entry_get_name failed");
 			}
 
-			_device_path = path;
 			_device = udev_device_new_from_syspath(context, path);
 
 			if (!_device)
@@ -86,11 +85,6 @@ namespace fstrinkets
 		operator udev_device* () const
 		{
 			return _device;
-		}
-
-		std::string device_path() const
-		{
-			return _device_path;
 		}
 
 		std::string device_type() const
@@ -134,7 +128,6 @@ namespace fstrinkets
 	private:
 		udev_context& _context;
 		udev_device* _device = nullptr;
-		std::string _device_path;
 	};
 
 

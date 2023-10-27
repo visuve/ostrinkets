@@ -26,7 +26,7 @@ public:
 
 	bool is_valid() const
 	{
-		return _handle && _handle != INVALID_HANDLE_VALUE;
+		return _handle != 0 && _handle != INVALID_HANDLE_VALUE;
 	}
 
 	DWORD wait(millisecond time)
