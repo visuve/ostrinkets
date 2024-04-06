@@ -1,12 +1,12 @@
-name: cppcheck
+name: Cppcheck
 
 on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Install Cppcheck
       run: |
