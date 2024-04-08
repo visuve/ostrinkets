@@ -8,7 +8,7 @@ public:
 	memory_mapped_file_impl(const std::filesystem::path& path) :
 		_file(CreateFileW(
 			path.c_str(),
-			GENERIC_READ | GENERIC_WRITE,
+			GENERIC_READ,
 			0,
 			nullptr,
 			OPEN_EXISTING,
@@ -20,21 +20,21 @@ public:
 			throw std::system_error(GetLastError(), std::system_category(), "CreateFileW");
 		}
 
-		LARGE_INTEGER mappingSize;
+		LARGE_INTEGER mapping_size;
 
-		if (!GetFileSizeEx(_file, &mappingSize))
+		if (!GetFileSizeEx(_file, &mapping_size))
 		{
 			throw std::system_error(GetLastError(), std::system_category(), "GetFileSizeEx");
 		}
 
-		_size = mappingSize.QuadPart;
+		_size = mapping_size.QuadPart;
 
 		_mapping = CreateFileMappingW(
 			_file,
 			nullptr,
 			PAGE_READWRITE,
-			mappingSize.HighPart,
-			mappingSize.LowPart,
+			mapping_size.HighPart,
+			mapping_size.LowPart,
 			nullptr);
 
 		if (!_mapping)
