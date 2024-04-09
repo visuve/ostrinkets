@@ -9,7 +9,7 @@ public:
 		_file(CreateFileW(
 			path.c_str(),
 			GENERIC_READ,
-			0,
+			FILE_SHARE_READ,
 			nullptr,
 			OPEN_EXISTING,
 			FILE_ATTRIBUTE_NORMAL,

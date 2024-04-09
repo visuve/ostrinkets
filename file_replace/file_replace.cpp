@@ -31,7 +31,7 @@ std::vector<match> find_all_plain(std::string_view haystack, std::string_view ne
 	return result;
 }
 
-std::vector<match> find_all_regex(std::string_view haystack, const std::string needle)
+std::vector<match> find_all_regex(std::string_view haystack, const std::string& needle)
 {
 	std::vector<match> result;
 
@@ -168,7 +168,12 @@ int main(int argc, char** argv)
 	const auto end = std::chrono::high_resolution_clock::now();
 	const auto diff = end - begin;
 
+#ifdef _WIN32
 	std::cout << "Replaced " << count << " occurrences. Took: " << std::format("{:%T}\n", diff);
+#else
+	std::cout << "Replaced " << count << " occurrences. Took: " <<
+		std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() << "ms" << std::endl;
+#endif
 
 	return 0;
 }
