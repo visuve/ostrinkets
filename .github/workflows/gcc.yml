@@ -1,4 +1,4 @@
-name: Ubuntu g++12
+name: Ubuntu G++
 
 on: [push, pull_request]
 
@@ -10,11 +10,11 @@ jobs:
     - name: Install tools
       run: |
         sudo apt update
-        sudo apt install g++-12 cmake libudev-dev
+        sudo apt install g++ cmake libudev-dev
 
     - name: Build
       run: |
         mkdir out
         cd out
-        cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-12 -DCMAKE_CXX_COMPILER=/usr/bin/g++-12 ..
+        cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ ..
         make

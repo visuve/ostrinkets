@@ -11,7 +11,7 @@ jobs:
     - name: Install Cppcheck
       run: |
         sudo apt update
-        sudo apt --yes install cppcheck
+        sudo apt install cppcheck
 
     - name: Static analysis
       run: |

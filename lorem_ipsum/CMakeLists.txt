@@ -1,15 +1,14 @@
 if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_C_COMPILER_ID STREQUAL "GNU")
 	set(LOREM_IPSUM_SRC
 		"${CMAKE_CURRENT_SOURCE_DIR}/lorem_ipsum.c"
-		"${CMAKE_CURRENT_SOURCE_DIR}/Kbuild"
-	)
+		"${CMAKE_CURRENT_SOURCE_DIR}/Kbuild")
 
 	set(LOREM_IPSUM_KMOD "${CMAKE_CURRENT_BINARY_DIR}/lorem_ipsum.ko")
 
 	message(${CMAKE_SYSTEM_VERSION})
 
 	if(CMAKE_SYSTEM_VERSION MATCHES "microsoft")
-		set(KERNEL_DIR "/lib/modules/5.15.0-46-generic/build" CACHE PATH "Kernel headers" FORCE)
+		set(KERNEL_DIR "/lib/modules/6.8.0-31-generic/build" CACHE PATH "Kernel headers" FORCE)
 		if (NOT EXISTS ${KERNEL_DIR})
 			message(WARNING "Kernel headers at ${KERNEL_DIR} not found. Did you remember to install linux-headers-generic?")
 		endif()
@@ -24,7 +23,11 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_C_COMPILER_ID STREQUAL "GNU")
 
 	add_custom_target(LOREM_IPSUM_COPY ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LOREM_IPSUM_SRC} ${CMAKE_CURRENT_BINARY_DIR})
 
-	add_custom_command(OUTPUT ${LOREM_IPSUM_KMOD} COMMAND ${KBUILD_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${LOREM_IPSUM_COPY} Kbuild VERBATIM)
+	add_custom_command(
+		OUTPUT ${LOREM_IPSUM_KMOD}
+		COMMAND ${KBUILD_CMD}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		DEPENDS ${LOREM_IPSUM_COPY} Kbuild VERBATIM)
 
 	add_custom_target(lorem_ipsum ALL DEPENDS ${LOREM_IPSUM_KMOD})
 endif()

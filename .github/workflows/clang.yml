@@ -1,4 +1,4 @@
-name: Ubuntu Clang 15
+name: Ubuntu Clang
 
 on: [push, pull_request]
 
@@ -10,11 +10,11 @@ jobs:
     - name: Install tools
       run: |
         sudo apt update
-        sudo apt --yes install clang-15 cmake libudev-dev
+        sudo apt install clang cmake libudev-dev
 
     - name: Build
       run: |
         mkdir out
         cd out
-        cmake -DCMAKE_C_COMPILER=/usr/bin/clang-15 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-15 ..
+        cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ..
         make
