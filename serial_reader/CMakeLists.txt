@@ -1,0 +1,5 @@
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+	add_executable(SerialReader "main.cpp" "serial_reader_win32.cpp")
+else()
+	add_executable(serial_reader "main.cpp" "serial_reader_posix.cpp")
+endif()
