@@ -14,7 +14,7 @@ int wmain(int argc, wchar_t* argv[])
 int main(int argc, char* argv[])
 {
 #endif
-	using namespace fstrinkets;
+	using namespace ostrinkets;
 
 	if (argc <= 1)
 	{

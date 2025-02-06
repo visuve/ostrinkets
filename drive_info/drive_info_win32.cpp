@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <wrl/client.h>
 
-namespace fstrinkets
+namespace ostrinkets
 {
 	template<typename T>
 	using com_ptr = Microsoft::WRL::ComPtr<T>;

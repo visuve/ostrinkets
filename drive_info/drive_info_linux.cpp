@@ -4,7 +4,7 @@
 #include <system_error>
 #include <libudev.h> // apt install libudev-dev
 
-namespace fstrinkets
+namespace ostrinkets
 {
 	class udev_context
 	{

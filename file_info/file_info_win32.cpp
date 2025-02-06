@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-namespace fstrinkets
+namespace ostrinkets
 {
 	struct auto_handle
 	{

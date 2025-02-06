@@ -6,7 +6,7 @@
 #include <libgeom.h>
 #include <memory>
 
-namespace fstrinkets
+namespace ostrinkets
 {
 	class geom_tree
 	{

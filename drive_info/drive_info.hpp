@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace fstrinkets
+namespace ostrinkets
 {
 	struct drive_info
 	{

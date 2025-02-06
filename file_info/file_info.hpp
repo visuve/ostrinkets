@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace fstrinkets
+namespace ostrinkets
 {
 	void print_file_info(const std::filesystem::path& path);
 }

@@ -4,7 +4,7 @@
 
 int main()
 {
-	using namespace fstrinkets;
+	using namespace ostrinkets;
 
 	try
 	{
