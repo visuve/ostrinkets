@@ -1,5 +1,6 @@
 #include "mem_search.hpp"
 
+#include <string>
 #include <Windows.h>
 #include <TlHelp32.h>
 

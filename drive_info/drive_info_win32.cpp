@@ -79,10 +79,9 @@ namespace ostrinkets
 	class wmi_drive_info
 	{
 	public:
-		wmi_drive_info()
+		wmi_drive_info() :
+			_result(CoInitializeEx(nullptr, COINIT_MULTITHREADED))
 		{
-			_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-
 			if (FAILED(_result))
 			{
 				throw std::system_error(_result, std::system_category(), "CoInitializeEx failed");

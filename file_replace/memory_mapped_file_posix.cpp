@@ -49,6 +49,11 @@ public:
 
 	~memory_mapped_file_impl()
 	{
+		if (_view)
+		{
+			munmap(_view, _size);
+		}
+
 		if (_descriptor)
 		{
 			::close(_descriptor);
@@ -68,6 +73,8 @@ public:
 			{
 				throw std::system_error(errno, std::system_category(), "munmap");
 			}
+
+			_size = 0;
 		}
 
 		if (_descriptor > 0)
@@ -82,6 +89,11 @@ public:
 	}
 
 private:
+	memory_mapped_file_impl(const memory_mapped_file_impl&) = delete;
+	memory_mapped_file_impl(memory_mapped_file_impl&&) = delete;
+	memory_mapped_file_impl& operator = (const memory_mapped_file_impl&) = delete;
+	memory_mapped_file_impl& operator = (memory_mapped_file_impl&&) = delete;
+
 	int _descriptor = 0;
 	void* _view = nullptr;
 	size_t _size = 0;

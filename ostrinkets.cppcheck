@@ -27,5 +27,6 @@
 	</libraries>
 	<suppressions>
 		<suppression>noExplicitConstructor</suppression>
+		<suppression>ctuOneDefinitionRuleViolation</suppression>
 	</suppressions>
 </project>

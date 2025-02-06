@@ -66,7 +66,7 @@ int lorem_ipsum_init(void)
 		return error_code;
 	}
 
-	lorem_ipsum_class = class_create(THIS_MODULE, lorem_ipsum_class_name);
+	lorem_ipsum_class = class_create(lorem_ipsum_class_name);
 
 	if (lorem_ipsum_class == NULL)
 	{

@@ -15,5 +15,10 @@ public:
 	void close();
 
 private:
+	memory_mapped_file(const memory_mapped_file&) = delete;
+	memory_mapped_file(memory_mapped_file&&) = delete;
+	memory_mapped_file& operator = (const memory_mapped_file&) = delete;
+	memory_mapped_file& operator = (memory_mapped_file&&) = delete;
+
 	memory_mapped_file_impl* _impl;
 };

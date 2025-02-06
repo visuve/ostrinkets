@@ -15,7 +15,7 @@ public:
 			FILE_ATTRIBUTE_NORMAL,
 			NULL))
 	{
-		if (!_file || _file == INVALID_HANDLE_VALUE)
+		if (_file == nullptr || _file == INVALID_HANDLE_VALUE)
 		{
 			throw std::system_error(GetLastError(), std::system_category(), "CreateFileW");
 		}
@@ -83,6 +83,7 @@ public:
 			}
 
 			_view = nullptr;
+			_size = 0;
 		}
 
 		if (_mapping)
@@ -107,6 +108,11 @@ public:
 	}
 
 private:
+	memory_mapped_file_impl(const memory_mapped_file_impl&) = delete;
+	memory_mapped_file_impl(memory_mapped_file_impl&&) = delete;
+	memory_mapped_file_impl& operator = (const memory_mapped_file_impl&) = delete;
+	memory_mapped_file_impl& operator = (memory_mapped_file_impl&&) = delete;
+
 	HANDLE _file = nullptr;
 	HANDLE _mapping = nullptr;
 	void* _view = nullptr;
