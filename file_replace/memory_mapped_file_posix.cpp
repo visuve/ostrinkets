@@ -47,6 +47,9 @@ public:
 		}
 	}
 
+	memory_mapped_file_impl(const memory_mapped_file_impl&) = delete;
+	memory_mapped_file_impl(memory_mapped_file_impl&&) = delete;
+
 	~memory_mapped_file_impl()
 	{
 		if (_descriptor)
@@ -54,6 +57,9 @@ public:
 			::close(_descriptor);
 		}
 	}
+
+	memory_mapped_file_impl& operator = (const memory_mapped_file_impl&) = delete;
+	memory_mapped_file_impl& operator = (memory_mapped_file_impl&&) = delete;
 
 	std::string_view data()
 	{

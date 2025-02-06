@@ -50,7 +50,7 @@ namespace ostrinkets
 		int _result;
 	};
 
-	void fill_drive_info(ggeom* disk_object, drive_info& di)
+	void fill_drive_info(const ggeom* disk_object, drive_info& di)
 	{
 		if (!disk_object)
 		{
@@ -76,7 +76,7 @@ namespace ostrinkets
 		}
 	}
 
-	void fill_partition_info(ggeom* partition_object, drive_info& di)
+	void fill_partition_info(const ggeom* partition_object, drive_info& di)
 	{
 		if (!partition_object)
 		{
@@ -101,7 +101,7 @@ namespace ostrinkets
 	std::vector<drive_info> get_drive_info()
 	{
 		geom_tree tree;
-		gclass* disk_class = tree.find_geom_class("DISK");
+		const gclass* disk_class = tree.find_geom_class("DISK");
 
 		std::vector<drive_info> drives;
 
@@ -114,7 +114,7 @@ namespace ostrinkets
 			drives.emplace_back(di);
 		}
 
-		gclass* partition_class = tree.find_geom_class("PART");
+		const gclass* partition_class = tree.find_geom_class("PART");
 
 		for (ggeom* partition_object = partition_class->lg_geom.lh_first;
 			partition_object;

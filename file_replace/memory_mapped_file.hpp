@@ -9,7 +9,12 @@ class memory_mapped_file
 {
 public:
 	memory_mapped_file(const std::filesystem::path& path);
+	memory_mapped_file(const memory_mapped_file&) = delete;
+	memory_mapped_file(memory_mapped_file&&) = delete;
 	~memory_mapped_file();
+	
+	memory_mapped_file& operator = (const memory_mapped_file&) = delete;
+	memory_mapped_file& operator = (memory_mapped_file&&) = delete;
 
 	std::string_view data() const;
 	void close();

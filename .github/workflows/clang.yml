@@ -10,11 +10,11 @@ jobs:
     - name: Install tools
       run: |
         sudo apt update
-        sudo apt install cmake ninja-build clang libudev-dev linux-headers-generic
+        sudo apt install cmake ninja-build clang libudev-dev linux-headers-generic xorg-dev
 
     - name: Build
       run: |
         mkdir out
         cd out
         cmake -G Ninja -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ..
-        make
+        ninja
